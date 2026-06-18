@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fruhnert Hausmeisterservice - Kalkulator</title>
+<style>
+    body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f5f7;color:#1d1d1f;padding:20px;display:flex;justify-content:center}
+    .card{background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);padding:24px;max-width:420px;width:100%;box-sizing:border-box}
+    h2{text-align:center;color:#1e3d59;margin:0 0 20px;font-size:22px}.form-group{margin-bottom:16px}
+    .form-row{display:flex !important;gap:12px !important;width:100% !important;box-sizing:border-box}
+    .form-row .form-group{flex:1 !important;width:auto !important;margin-bottom:12px !important}
+    label{display:block;font-weight:600;margin-bottom:6px;font-size:14px}
+    input{width:100%;padding:10px;border:1px solid #d2d2d7;border-radius:8px;font-size:16px;box-sizing:border-box}
+    input::placeholder {font-size:12px;color:#86868b;}
+    .sub-field{background:#f5f5f7;padding:12px;border-radius:8px;margin-bottom:16px;display:none;box-sizing:border-box}
+    .switch-group{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f7}
+    .switch{position:relative;display:inline-block;width:50px;height:28px}.switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#e5e5ea;transition:.3s;border-radius:34px}
+    .slider:before {position:absolute;content:"";height:24px;width:24px;left:2px;bottom:2px;background:#fff;transition:.3s;border-radius:50%}
+    input:checked+.slider{background:#34c759}input:checked+.slider:before{transform:translateX(22px)}
+    .result-box{background:#f5f5f7;border-radius:8px;padding:16px;margin-top:20px;font-size:15px}
+    .result-line{display:flex;justify-content:space-between;margin-bottom:8px}
+    .result-line.total{font-weight:700;font-size:18px;border-top:1px solid #d2d2d7;padding-top:8px;margin-top:8px}
+    .result-line.extra{color:#1e3d59;font-weight:600;border-top:1px dashed #d2d2d7;padding-top:8px;margin-top:8px;}
+    .hint{font-size:11px;color:#86868b;text-align:center;margin-top:12px;background:#fff9e6;padding:8px;border-radius:6px;border:1px solid #ffe0b2}
+    .warn-hint{font-size:11px;color:#b78103;text-align:center;margin-top:8px;background:#fff3cd;padding:8px;border-radius:6px;border:1px solid #ffeeba;display:none;}
+    .contact-box{margin-top:20px;border-top:2px dashed #d2d2d7;padding-top:20px}
+    .btn-submit{background:#1e3d59;color:#fff;border:none;padding:12px;font-size:16px;font-weight:600;border-radius:8px;width:100%;cursor:pointer}
+    .section-title{color:#86868b;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin:24px 0 8px 0;border-bottom:1px solid #d2d2d7;padding-bottom:6px}
+    .pauschale-hint{font-size:12px;color:#86868b;margin:14px 0 6px 0;font-style:italic;line-height:1.45;background:#f5f5f7;padding:10px;border-radius:8px}
+    .tel-info{font-size:12px;color:#86868b;text-align:center;margin-top:-10px;margin-bottom:15px;}
+    /* Sichtbares Feld erhält die ID für das JavaScript */
+    .developer-credits{font-size:10px;color:#c7c7cc;text-align:center;margin-top:12px;letter-spacing:0.3px}
+</style>
+</head>
+<body>
+<div class="card">
+    <h2>Fruhnert Hausmeisterservice</h2>
+    <div class="tel-info">📞 Telefon: 08141 50 98 95 6</div>
+    
+    <div class="form-row">
+        <div class="form-group"><label>Wohneinheiten:</label><input type="number" id="einheiten" value="4" oninput="berechnePreis()"></div>
+        <div class="form-group"><label>Höchstes Stockwerk:</label><input type="number" id="etagen" placeholder="Ab 3. OG angeben" oninput="berechnePreis()"></div>
+    </div>
+    
+    <div class="form-group"><label>Gartenfläche (in qm):</label><input type="number" id="garten_qm" placeholder="Bis 300 qm inklusive" oninput="berechnePreis()"></div>
+    <div class="switch-group"><label>Treppenhausreinigung (wöchentlich)</label><label class="switch"><input type="checkbox" id="reinigung" checked onchange="berechnePreis()"><span class="slider"></span></label></div>
+    <div class="switch-group"><label>Fahrstuhl vorhanden (+15€ / Mon.)</label><label class="switch"><input type="checkbox" id="fahrstuhl" onchange="berechnePreis()"><span class="slider"></span></label></div>
+    <div class="switch-group"><label>Gartenpflege & Rasenmähen</label><label class="switch"><input type="checkbox" id="garten" checked onchange="berechnePreis()"><span class="slider"></span></label></div>
+    <div class="switch-group"><label>Winterdienst-Pauschale</label><label class="switch"><input type="checkbox" id="winter" checked onchange="berechnePreis()"><span class="slider"></span></label></div>
+    <div class="switch-group"><label>Mülltonnendienst per App</label><label class="switch"><input type="checkbox" id="tonnen" checked onchange="berechnePreis()"><span class="slider"></span></label></div>
+    
+    <div class="section-title">Einmalige Zusatzleistungen</div>
+
+    <div class="switch-group"><label>Tiefgaragenreinigung (Nassreinigung)</label><label class="switch"><input type="checkbox" id="tg_aktiv" onchange="berechnePreis()"><span class="slider"></span></label></div>
+    <div id="tg_feld" class="sub-field">
+        <div class="form-row">
+            <div class="form-group"><label>Stellplätze:</label><input type="number" id="tg_plaetze" value="0" min="0" oninput="berechnePreis()"></div>
+            <div class="form-group"><label>TG-Fläche (qm):</label><input type="number" id="tg_qm" value="0" min="0" oninput="berechnePreis()"></div>
+        </div>
+        <div id="tg_warnung" class="warn-hint">⚠️ Hinweis: Die qm-Fläche weicht stark von der Stellplatzanzahl ab. Bitte Daten prüfen.</div>
+    </div>
+
+    <div class="switch-group"><label>Dachrinnenreinigung (Dachrinnensauger mit Kamera)</label><label class="switch"><input type="checkbox" id="rinne_aktiv" onchange="berechnePreis()"><span class="slider"></span></label></div>
+    <div id="rinne_feld" class="sub-field">
+        <div class="form-row">
+            <div class="form-group"><label>Länge vorne (m):</label><input type="number" id="rinne_vorne" value="0" min="0" oninput="berechnePreis()"></div>
+            <div class="form-group"><label>Länge hinten (m):</label><input type="number" id="rinne_hinten" value="0" min="0" oninput="berechnePreis()"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Anzahl Fallrohre:</label><input type="number" id="fallrohre" value="0" min="0" oninput="berechnePreis()"></div>
+            <div class="form-group"><label>Arbeitshöhe (m):</label><input type="number" id="rinne_hoehe" value="0" min="0" placeholder="z.B. 6" oninput="berechnePreis()"></div>
+        </div>
+    </div>
+
+    <div class="pauschale-hint">💡 **Paket-Tipp:** Beide Leistungen sind auch als feste Integration in die laufende Hausmeisterpauschale (1-mal jährlich) möglich. Der Preis ist dann deutlich günstiger als im Einzelabruf, da wir Ihnen einen Paket-Rabatt gewähren.</div>
+
+    <div class="result-box">
+        <div class="result-line"><span>Objektgröße:</span><span id="out-einheiten">4 WE</span></div>
+        <div class="result-line"><span>Gartenfläche:</span><span id="out-garten-text">Standard</span></div>
+        <div class="result-line"><span>Satz pro WE (Netto):</span><span id="out-pro-wohnung">97.50 €</span></div>
+        <div class="result-line total"><span>Monatspauschale (Netto):</span><span id="out-netto">390.00 €</span></div>
+        <div class="result-line" style="font-size:13px;color:#86868b;"><span>inkl. 19% MwSt. (Brutto):</span><span id="out-brutto">464.10 €</span></div>
+        <div id="out-tg-box" style="display:none;" class="result-line extra"><span>Einmalige TG-Reinigung (Netto):</span><span id="out-tg-preis">0.00 €</span></div>
+        <div id="out-rinne-box" style="display:none;" class="result-line extra"><span>Einmalige Rinne-Reinigung (Netto):</span><span id="out-rinne-preis">0.00 €</span></div>
+    </div>
+    <div class="hint"><strong>⚠️ Wichtiger Hinweis:</strong> Grober Richtwert für Standardkonditionen. Finaler Preis nach Begehung.</div>
+    
+    <div class="contact-box">
+        <label style="color:#1e3d59;font-size:16px;display:block;margin-bottom:12px;font-weight:700;">Unverbindliches Angebot anfordern</label>
+        <div class="form-group"><input type="text" id="kunde_name" placeholder="Ihr Name / Hausverwaltung" required></div>
+        <div class="form-group"><input type="email" id="kunde_email" placeholder="Ihre E-Mail-Adresse" required></div>
+        <div class="form-group"><input type="text" id="kunde_adresse" placeholder="Objektadresse (Straße, PLZ, Ort)"></div>
+        <button class="btn-submit" onclick="sendeAnfrage()">Konkretes Angebot anfordern</button>
+    </div>
+    
+    <!-- Die Box wartet auf die automatische Befüllung durch das JavaScript -->
+    <div class="developer-credits" id="dev-box"></div>
+</div>
+<script>
+/* 
+ * Encrypted Code Area - System Integrity Check
+ * _0x5a2f: Versteckte Urheberrechts-Verankerung im Quelltext
+ */
+const _0x5a2f = [0x45,0x6e,0x74,0x77,0x69,0x63,0x6b,0x65,0x6c,0x74,0x20,0x76,0x6f,0x6e,0x20,0x46,0x72,0x75,0x68,0x6e,0x65,0x72,0x74,0x20,0x41,0x6e,0x64,0x72,0x65,0x61,0x73];
+
+let weltNetto="390.00 €",weltBrutto="464.10 €",weltTgNetto="0.00 €",weltRinneNetto="0.00 €",weltDetails="";
+
+function berechnePreis(){
+    let n=parseInt(document.getElementById('einheiten').value)||4,
+        e=document.getElementById('etagen').value,
+        t=document.getElementById('garten_qm').value,
+        a=e!==""?parseInt(e):2,
+        i=t!==""?parseInt(t):0,
+        l=document.getElementById('garten').checked,
+        r=document.getElementById('reinigung').checked,
+        c=document.getElementById('winter').checked,
+        u=document.getElementById('tonnen').checked,
+        o=document.getElementById('fahrstuhl').checked,
+        g_aktiv=document.getElementById('tg_aktiv').checked,
+        rinne_aktiv=document.getElementById('rinne_aktiv').checked,
+        g=0,s=0,tg_preis=0,tg_qm_wert=0,plaetze=0,rinne_preis=0,r_vorne=0,r_hinten=0,f_rohre=0,r_hoehe=0;
+
+    if(g_aktiv){
+        document.getElementById('tg_feld').style.display='block';
+        document.getElementById('out-tg-box').style.display='flex';
+        plaetze=parseInt(document.getElementById('tg_plaetze').value)||0;
+        tg_qm_wert=parseInt(document.getElementById('tg_qm').value)||0;
+        
+        if(tg_qm_wert>0){tg_preis=tg_qm_wert*2.0}else{tg_preis=plaetze*22}
+        if((plaetze>0||tg_qm_wert>0)&&tg_preis<290){tg_preis=290}
+        
+        let geschätztePlaetze=tg_qm_wert/25;
+        if(tg_qm_wert>0&&plaetze>0&&Math.abs(geschätztePlaetze-plaetze)>2){
+            document.getElementById('tg_warnung').style.display='block';
+        }else{
+            document.getElementById('tg_warnung').style.display='none';
+        }
+    }else{
+        document.getElementById('tg_feld').style.display='none';
+        document.getElementById('out-tg-box').style.display='none';
+    }
+
+    if(rinne_aktiv){
+        document.getElementById('rinne_feld').style.display='block';
+        document.getElementById('out-rinne-box').style.display='flex';
+        r_vorne=parseFloat(document.getElementById('rinne_vorne').value)||0;
+        r_hinten=parseFloat(document.getElementById('rinne_hinten').value)||0;
+        f_rohre=parseInt(document.getElementById('fallrohre').value)||0;
+        r_hoehe=parseFloat(document.getElementById('rinne_hoehe').value)||0;
+        
+        let gesamtLaenge=r_vorne+r_hinten;
+        if(gesamtLaenge>0){
+            rinne_preis=220;
+            rinne_preis+=(gesamtLaenge*11);
+            rinne_preis+=(f_rohre*10);
+            if(r_hoehe>4&&r_hoehe<=7){
+                rinne_preis+=19;
+            }else if(r_hoehe>7){
+                rinne_preis+=75;
+            }
+        }
+    }else{
+        document.getElementById('rinne_feld').style.display='none';
+        document.getElementById('out-rinne-box').style.display='none';
+    }
+
+    if(l&&i>300){s=(i-300)*.2}
+
+    let aktiveLeistungen = 0;
+    if(r) aktiveLeistungen++; 
+    if(l) aktiveLeistungen++; 
+    if(c) aktiveLeistungen++; 
+    if(u) aktiveLeistungen++; 
+
+    if(n>=5){
+        let p=0;
+        if(r)p+=27.5;
+        if(l)p+=25;
+        if(c)p+=30;
+        if(u)p+=10;
+        if(n>=20){p*=.9}else if(n>=10){p*=.9}
+        g=n*p;
+        if(r&&a>2){g+=(a-2)*15}
+    }else{
+        if(r && !l && !c && !u){
+            let d=15+(n*5);
+            g=(d/60)*4.33*45;
+            if(a>2){g+=(a-2)*15}
+        }else{
+            let p=97.5;
+            if(!l)p-=25;
+            if(!r)p-=25;
+            if(!c)p-=30;
+            if(!u)p-=10;
+            g=n*p;
+            if(r&&a>2){g+=(a-2)*15}
+        }
+    }
+
+    g+=s;
+
+    if(aktiveLeistungen > 1) {
+        if(g<250){g=250}
+    } else {
+        if(g<150){g=150}
+    }
+
+    if(o){g+=15}
+
+    let m=g*1.19, h=g/n, f=a>2?"bis "+a+". OG":"Standard (bis 2. OG)", v=s>0?i+" qm (+ "+s.toFixed(2)+" €)":"Standard (bis 300 qm)";
+
+    document.getElementById('out-einheiten').innerText=n+" WE / "+f;
+    document.getElementById('out-garten-text').innerText=v;
+    document.getElementById('out-pro-wohnung').innerText=h.toFixed(2)+" €";
+    document.getElementById('out-netto').innerText=g.toFixed(2)+" €";
+    document.getElementById('out-brutto').innerText=m.toFixed(2)+" €";
+    document.getElementById('out-tg-preis').innerText=tg_preis.toFixed(2)+" €";
+    document.getElementById('out-rinne-preis').innerText=rinne_preis.toFixed(2)+" €";
+    
+    weltNetto=g.toFixed(2)+" €";
+    weltBrutto=m.toFixed(2)+" €";
+    weltTgNetto=tg_preis.toFixed(2)+" €";
+    weltRinneNetto=rinne_preis.toFixed(2)+" €";
+
+    weltDetails="--------------------------------------------------\n📌 DETAILS DER LIEGENSCHAFT:\n--------------------------------------------------\n• Anzahl Wohneinheiten: "+n+" WE\n• Höchstes Stockwerk:   "+f+"\n• Garten- / Rasenfläche: "+i+" qm\n• Tiefgarage (Nass):    "+(g_aktiv?plaetze+" Stellplätze ("+tg_qm_wert+" qm)":"NEIN")+"\n• Dachrinnenreinigung:  "+(rinne_aktiv?"Vorne: "+r_vorne+"m / Hinten: "+r_hinten+"m | Fallrohre: "+f_rohre+" | Höhe: "+r_hoehe+"m":"NEIN")+"\n\n⚙️ GEWÄHLTE LEISTUNGEN:\n• Treppenhausreinigung:  "+(r?"JA":"NEIN")+"\n• Fahrstuhl-Reinigung:   "+(o?"JA":"NEIN")+"\n• Gartenpflege & Rasen:  "+(l?"JA":"NEIN")+"\n• Winterdienst-Pauschale:"+(c?"JA":"NEIN")+"\n• Mülltonnendienst (App):"+(u?"JA":"NEIN")+"\n--------------------------------------------------";
+}
+
+function sendeAnfrage(){
+    let n=document.getElementById('kunde_name').value,
+        e=document.getElementById('kunde_email').value,
+        t=document.getElementById('kunde_adresse').value;
+    if(!n||!e){
+        alert("Bitte Namen und E-Mail eintragen.");
+        return;
+    }
+    let a="info@hausmeister-fruhnert.de",
+        i="Sehr geehrtes Team,\n\nes wurde eine neue Preiskalkulation über das Online-Tool durchgeführt.\n\n👤 KUNDENDATEN:\n• Name / Hausverwaltung: "+n+"\n• E-Mail für Rückfragen: "+e+"\n• Adresse der Liegenschaft: "+(t?t:"Nicht angegeben")+"\n\n"+weltDetails+"\n\n💰 BERECHNETER RICHTPREIS:\n• Monatspauschale (NETTO):  "+weltNetto+"\n• Monatspauschale (BRUTTO): "+weltBrutto+"\n• Einmalige Garagenreinigung: "+weltTgNetto+"\n• Einmalige Rinnenreinigung:  "+weltRinneNetto+"\n\nBitte setzen Sie sich zwecks einer Terminvereinbarung und Objektbegehung mit dem Kunden in Verbindung.\n\nMit freundlichen Grüßen,\n"+n,
+        l="mailto:"+a+"?subject="+encodeURIComponent("Online-Kalkulation: "+n)+"&body="+encodeURIComponent(i);
+    window.location.href=l;
+}
+
+window.onload=function(){
+    // Entschlüsselt die Namens-Matrix vollautomatisch beim Laden der Webseite
+    document.getElementById('dev-box').innerText = String.fromCharCode(..._0x5a2f);
+    berechnePreis();
+};
+</script>
+</body>
+</html>
