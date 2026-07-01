@@ -15,6 +15,11 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 
 const app = express();
+
+// Render läuft hinter einem Reverse-Proxy; das muss Express wissen,
+// damit express-rate-limit die echte Besucher-IP korrekt erkennt.
+app.set('trust proxy', 1);
+
 app.use(express.json({ limit: '100kb' }));
 
 /* ------------------------------------------------------------------ */
@@ -157,8 +162,14 @@ async function legeAngebotAn({ contactId, objektAdresse, details, preise }) {
     });
   }
 
+  // Lexoffice verlangt ein Ablaufdatum für Angebote. Standard: 30 Tage Gültigkeit.
+  const heute = new Date();
+  const ablaufdatum = new Date(heute);
+  ablaufdatum.setDate(ablaufdatum.getDate() + 30);
+
   const payload = {
-    voucherDate: new Date().toISOString(),
+    voucherDate: heute.toISOString(),
+    expirationDate: ablaufdatum.toISOString(),
     address: { contactId: contactId },
     lineItems: lineItems,
     totalPrice: { currency: 'EUR' },
