@@ -195,22 +195,6 @@ async function legeAngebotAn({ contactId, kundenName, hatAdresse, objektAdresse,
     macheZeile('Individuelle Preisanpassung', pos.korrektur, 'Manueller Aufschlag/Nachlass für dieses Angebot');
   }
 
-  // Falls aus irgendeinem Grund keine Einzelposition zustande kam (Rand-/Fehlerfall),
-  // trotzdem den Gesamtpreis als Sicherheitsnetz anzeigen.
-  if (lineItems.length === 0) {
-    lineItems.push({
-      type: 'custom',
-      name: 'Facility-Management Monatspauschale – ' + details.einheiten + ' WE',
-      quantity: 1,
-      unitName: 'Monat',
-      unitPrice: {
-        currency: 'EUR',
-        netAmount: preise.monatsNetto,
-        taxRatePercentage: 19
-      }
-    });
-  }
-
   if (details.tgAktiv && preise.tgNetto && preise.tgNetto > 0) {
     lineItems.push({
       type: 'custom',
@@ -255,6 +239,32 @@ async function legeAngebotAn({ contactId, kundenName, hatAdresse, objektAdresse,
         netAmount: preise.winterSoloNetto,
         taxRatePercentage: 19
       }
+    });
+  }
+
+  // Echtes Sicherheitsnetz: nur wenn WIRKLICH gar keine einzige Position zustande kam
+  // (auch nicht TG, Dachrinne oder eigenständiger Winterdienst) – sollte praktisch nie eintreten.
+  if (lineItems.length === 0 && preise.monatsNetto > 0) {
+    lineItems.push({
+      type: 'custom',
+      name: 'Hausmeisterservice – ' + details.einheiten + ' WE',
+      quantity: 1,
+      unitName: 'Monat',
+      unitPrice: {
+        currency: 'EUR',
+        netAmount: preise.monatsNetto,
+        taxRatePercentage: 19
+      }
+    });
+  }
+
+  // Absoluter Notfall: nicht einmal das (z.B. komplett leeres Formular ohne jede Auswahl) –
+  // Lexoffice verlangt mindestens eine Position, daher ein reiner Hinweistext ohne Preis.
+  if (lineItems.length === 0) {
+    lineItems.push({
+      type: 'text',
+      name: 'Individuelle Anfrage',
+      description: 'Keine konkreten Leistungen im Online-Kalkulator ausgewählt. Bitte mit dem Kunden klären.'
     });
   }
 
