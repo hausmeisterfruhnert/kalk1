@@ -120,6 +120,31 @@ async function legeAngebotAn({ contactId, kundenName, hatAdresse, objektAdresse,
   const lineItems = [];
   const pos = preise.positionen || {};
 
+  // Objektübersicht als informative Kopfzeile (ohne eigenen Preis) –
+  // fasst alle Eckdaten zusammen, bevor die einzeln bepreisten Positionen folgen.
+  const uebersichtZeilen = [];
+  uebersichtZeilen.push('Wohneinheiten: ' + details.einheiten + ' WE');
+  uebersichtZeilen.push('Höchstes Stockwerk: ' + (details.stockwerkText || 'Standard (bis 2. OG)'));
+  uebersichtZeilen.push('Gartenfläche: ' + (details.gartenText || 'Standard'));
+  uebersichtZeilen.push('Treppenhausreinigung: ' + (details.reinigung ? 'Ja' : 'Nein'));
+  uebersichtZeilen.push('Fahrstuhlreinigung: ' + (details.fahrstuhl ? 'Ja' : 'Nein'));
+  uebersichtZeilen.push('Gartenpflege & Rasenmähen: ' + (details.garten ? 'Ja' : 'Nein'));
+  if (details.winter) {
+    uebersichtZeilen.push('Winterdienst-Pauschale: Ja'
+      + (details.winterFlaeche && details.winterFlaeche > 0
+        ? (' (Gehweg ' + details.winterFlaeche + ' qm, ' + (details.winterMaterial === 'salz' ? 'Streusalz' : 'Splitt') + ')')
+        : ' (Standardpauschale)'));
+  } else {
+    uebersichtZeilen.push('Winterdienst-Pauschale: Nein');
+  }
+  uebersichtZeilen.push('Mülltonnenbereitstellung (App): ' + (details.tonnen ? 'Ja' : 'Nein'));
+
+  lineItems.push({
+    type: 'text',
+    name: 'Hausmeisterservice',
+    description: uebersichtZeilen.join('\n')
+  });
+
   const macheZeile = (name, betrag, beschreibung) => {
     if (!betrag || betrag <= 0) return;
     lineItems.push({
@@ -208,6 +233,22 @@ async function legeAngebotAn({ contactId, kundenName, hatAdresse, objektAdresse,
       unitPrice: {
         currency: 'EUR',
         netAmount: preise.rinneNetto,
+        taxRatePercentage: 19
+      }
+    });
+  }
+
+  if (details.winterSoloAktiv && preise.winterSoloNetto && preise.winterSoloNetto > 0) {
+    lineItems.push({
+      type: 'custom',
+      name: 'Eigenständiger Winterdienst (' + (details.winterSoloFlaeche || 0) + ' qm, '
+        + (details.winterSoloMaterial === 'salz' ? 'Streusalz' : 'Splitt') + ')',
+      description: 'Unabhängig buchbarer Winterdienst ohne weitere Hausmeister-Leistungen',
+      quantity: 1,
+      unitName: 'Monat',
+      unitPrice: {
+        currency: 'EUR',
+        netAmount: preise.winterSoloNetto,
         taxRatePercentage: 19
       }
     });
