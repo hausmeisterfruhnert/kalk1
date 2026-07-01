@@ -187,7 +187,7 @@ async function legeAngebotAn({ contactId, kundenName, hatAdresse, objektAdresse,
   // damit das Angebot trotzdem erstellt wird (der Kontakt bleibt für später erhalten).
   const angebotsAdresse = hatAdresse
     ? { contactId: contactId }
-    : { name: kundenName };
+    : { name: kundenName, countryCode: 'DE' };
 
   const payload = {
     voucherDate: heute.toISOString(),
