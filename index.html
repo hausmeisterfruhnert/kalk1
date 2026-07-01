@@ -75,13 +75,14 @@ input:checked+.slider:before{transform:translateX(22px)}
     <label class="switch"><input type="checkbox" id="winter" checked onchange="berechnePreis()"><span class="slider"></span></label></div>
   <div id="winter_feld" class="sub-field">
     <div class="form-row">
-      <div class="form-group"><label>Zu räumende Fläche (qm):</label><input type="number" id="winter_flaeche" min="0" placeholder="leer = Standardpauschale" oninput="berechnePreis()"></div>
-      <div class="form-group"><label>Streumittel:</label>
-        <select id="winter_material" onchange="berechnePreis()" style="width:100%;padding:10px;border:1px solid #d2d2d7;border-radius:8px;font-size:14px;box-sizing:border-box">
-          <option value="splitt">Splitt</option>
-          <option value="salz">Streusalz</option>
-        </select>
-      </div>
+      <div class="form-group"><label>Gehweg-Fläche (qm):</label><input type="number" id="winter_flaeche" min="0" placeholder="leer = Standardpauschale" oninput="berechnePreis()"></div>
+      <div class="form-group"><label>Extrafläche (qm) – z.B. Parkplatz:</label><input type="number" id="winter_flaeche_extra" min="0" placeholder="optional" oninput="berechnePreis()"></div>
+    </div>
+    <div class="form-group"><label>Streumittel:</label>
+      <select id="winter_material" onchange="berechnePreis()" style="width:100%;padding:10px;border:1px solid #d2d2d7;border-radius:8px;font-size:14px;box-sizing:border-box">
+        <option value="splitt">Splitt</option>
+        <option value="salz">Streusalz</option>
+      </select>
     </div>
     <div class="warn-hint" style="display:block">ℹ️ Hinweis: Streusalz ist in vielen Gemeinden aus Umweltschutzgründen eingeschränkt oder verboten – bitte örtliche Satzung prüfen. Splitt ist meist die zulässige Standardlösung.</div>
   </div>
@@ -111,6 +112,23 @@ input:checked+.slider:before{transform:translateX(22px)}
     </div>
   </div>
 
+  <div class="switch-group"><label>Eigenständiger Winterdienst (unabhängig buchbar)</label>
+    <label class="switch"><input type="checkbox" id="winterSolo_aktiv" onchange="berechnePreis()"><span class="slider"></span></label></div>
+  <div id="winterSolo_feld" class="sub-field">
+    <div style="font-size:11px;color:#86868b;margin-bottom:10px;">Für Kunden, die ausschließlich Winterdienst wünschen, ohne die übrigen Hausmeister-Leistungen.</div>
+    <div class="form-row">
+      <div class="form-group"><label>Gehweg-Fläche (qm):</label><input type="number" id="winterSolo_flaeche" min="0" placeholder="z.B. 150" oninput="berechnePreis()"></div>
+      <div class="form-group"><label>Extrafläche (qm) – z.B. Parkplatz:</label><input type="number" id="winterSolo_flaeche_extra" min="0" placeholder="optional" oninput="berechnePreis()"></div>
+    </div>
+    <div class="form-group"><label>Streumittel:</label>
+      <select id="winterSolo_material" onchange="berechnePreis()" style="width:100%;padding:10px;border:1px solid #d2d2d7;border-radius:8px;font-size:14px;box-sizing:border-box">
+        <option value="splitt">Splitt</option>
+        <option value="salz">Streusalz</option>
+      </select>
+    </div>
+    <div class="warn-hint" style="display:block">ℹ️ Hinweis: Streusalz ist in vielen Gemeinden aus Umweltschutzgründen eingeschränkt oder verboten – bitte örtliche Satzung prüfen. Splitt ist meist die zulässige Standardlösung.</div>
+  </div>
+
   <div class="result-box">
     <div class="result-line"><span>Objektgröße:</span><span id="out-einheiten">4 WE</span></div>
     <div class="result-line"><span>Gartenfläche:</span><span id="out-garten-text">Standard</span></div>
@@ -119,6 +137,7 @@ input:checked+.slider:before{transform:translateX(22px)}
     <div class="result-line" style="font-size:13px;color:#86868b;"><span>inkl. 19% MwSt. (Brutto):</span><span id="out-brutto">–</span></div>
     <div id="out-tg-box" style="display:none;" class="result-line extra"><span>Einmalige TG-Reinigung (Netto):</span><span id="out-tg-preis">–</span></div>
     <div id="out-rinne-box" style="display:none;" class="result-line extra"><span>Einmalige Dachrinnenreinigung (Netto):</span><span id="out-rinne-preis">–</span></div>
+    <div id="out-winterSolo-box" style="display:none;" class="result-line extra"><span>Eigenständiger Winterdienst (Netto/Monat):</span><span id="out-winterSolo-preis">–</span></div>
   </div>
 
   <div class="hint"><strong>⚠️ Wichtiger Hinweis:</strong> Grober Richtwert für Standardkonditionen. Finaler Preis nach Begehung.</div>
@@ -177,6 +196,7 @@ input:checked+.slider:before{transform:translateX(22px)}
       <div class="form-group"><label>Mülltonnendienst</label><input type="number" id="cfg_tonnen" step="0.5"></div>
     </div>
     <div class="form-group"><label>Winterdienst € je qm (bei angegebener Fläche)</label><input type="number" id="cfg_winter_qm" step="0.05"></div>
+    <div class="form-group"><label>Mindestpreis eigenständiger Winterdienst (€)</label><input type="number" id="cfg_winter_solo_mindest" step="5"></div>
 
     <div class="admin-section-title">Zuschläge &amp; Rabatte</div>
     <div class="form-row">
@@ -250,6 +270,7 @@ const DEFAULT_CONFIG = {
   preisFahrstuhl: 15,
   preisEtage: 15,
   winterPreisProQm: 1.20,
+  winterStandaloneMindestpreis: 150,
   rabatt5: 5,     // in %
   rabatt10: 10,   // in %
   rabatt20: 15,   // in %
@@ -290,7 +311,7 @@ function speichereConfigDauerhaft(cfgOhneKorrektur){
 
 /* ---------------- Preisberechnung ---------------- */
 
-let weltNetto="", weltBrutto="", weltTgNetto="", weltRinneNetto="", weltDetails="";
+let weltNetto="", weltBrutto="", weltTgNetto="", weltRinneNetto="", weltWinterSoloNetto="", weltDetails="";
 let weltStrukturiert = null; // für die Lexoffice-Anbindung
 
 /* ============================================================
@@ -317,7 +338,9 @@ function berechnePreis(){
   const rinneAktiv = document.getElementById('rinne_aktiv').checked;
 
   document.getElementById('winter_feld').style.display = c ? 'block' : 'none';
-  const winterFlaeche = Math.max(0, parseFloat(document.getElementById('winter_flaeche').value) || 0);
+  const winterFlaecheGehweg = Math.max(0, parseFloat(document.getElementById('winter_flaeche').value) || 0);
+  const winterFlaecheExtra = Math.max(0, parseFloat(document.getElementById('winter_flaeche_extra').value) || 0);
+  const winterFlaeche = winterFlaecheGehweg + winterFlaecheExtra;
   const winterMaterial = document.getElementById('winter_material').value;
 
   let plaetze = 0, tgQmWert = 0, tgPreis = 0;
@@ -374,6 +397,29 @@ function berechnePreis(){
   }else{
     document.getElementById('rinne_feld').style.display = 'none';
     document.getElementById('out-rinne-box').style.display = 'none';
+  }
+
+  const winterSoloAktiv = document.getElementById('winterSolo_aktiv').checked;
+  let winterSoloFlaeche = 0, winterSoloMaterial = 'splitt', winterSoloPreis = 0;
+
+  if(winterSoloAktiv){
+    document.getElementById('winterSolo_feld').style.display = 'block';
+    document.getElementById('out-winterSolo-box').style.display = 'flex';
+    const winterSoloGehweg = Math.max(0, parseFloat(document.getElementById('winterSolo_flaeche').value) || 0);
+    const winterSoloExtra = Math.max(0, parseFloat(document.getElementById('winterSolo_flaeche_extra').value) || 0);
+    winterSoloFlaeche = winterSoloGehweg + winterSoloExtra;
+    winterSoloMaterial = document.getElementById('winterSolo_material').value;
+
+    if(winterSoloFlaeche === 0){
+      document.getElementById('out-winterSolo-preis').innerText = "Bitte Fläche eintragen";
+    }else{
+      winterSoloPreis = winterSoloFlaeche * CONFIG.winterPreisProQm;
+      if(winterSoloPreis < CONFIG.winterStandaloneMindestpreis){ winterSoloPreis = CONFIG.winterStandaloneMindestpreis; }
+      document.getElementById('out-winterSolo-preis').innerText = winterSoloPreis.toFixed(2) + " € / Monat";
+    }
+  }else{
+    document.getElementById('winterSolo_feld').style.display = 'none';
+    document.getElementById('out-winterSolo-box').style.display = 'none';
   }
 
   // Basissatz pro WE aus aktiven Leistungen (Winterdienst wird separat berechnet, s.u.)
@@ -459,6 +505,7 @@ function berechnePreis(){
   weltBrutto = brutto.toFixed(2) + " €";
   weltTgNetto = tgAktiv ? (document.getElementById('out-tg-preis').innerText) : "Nicht gewünscht";
   weltRinneNetto = rinneAktiv ? (document.getElementById('out-rinne-preis').innerText) : "Nicht gewünscht";
+  weltWinterSoloNetto = winterSoloAktiv ? (document.getElementById('out-winterSolo-preis').innerText) : "Nicht gewünscht";
 
   let korrekturZeile = "";
   if(CONFIG.korrekturProzent || CONFIG.korrekturFix){
@@ -474,7 +521,8 @@ function berechnePreis(){
     + "• Höchstes Stockwerk:   " + stockwerkText + "\n"
     + "• Garten- / Rasenfläche: " + gartenQm + " qm\n"
     + "• Tiefgarage (Nass):    " + (tgAktiv ? (plaetze + " Stellplätze (" + tgQmWert + " qm)") : "NEIN") + "\n"
-    + "• Dachrinnenreinigung:  " + (rinneAktiv ? ("Vorne " + rinneVorne + "m / Hinten " + rinneHinten + "m, " + fallrohre + " Fallrohre, Höhe " + rinneHoehe + "m") : "NEIN") + "\n\n"
+    + "• Dachrinnenreinigung:  " + (rinneAktiv ? ("Vorne " + rinneVorne + "m / Hinten " + rinneHinten + "m, " + fallrohre + " Fallrohre, Höhe " + rinneHoehe + "m") : "NEIN") + "\n"
+    + "• Eigenständiger Winterdienst: " + (winterSoloAktiv ? (winterSoloFlaeche + " qm, " + (winterSoloMaterial === "salz" ? "Streusalz" : "Splitt")) : "NEIN") + "\n\n"
     + "⚙️ GEWÄHLTE LEISTUNGEN:\n"
     + "• Treppenhausreinigung:  " + (r ? "JA" : "NEIN") + "\n"
     + "• Fahrstuhl-Reinigung:   " + (o ? "JA" : "NEIN") + "\n"
@@ -503,13 +551,17 @@ function berechnePreis(){
       rinneVorne: rinneVorne,
       rinneHinten: rinneHinten,
       fallrohre: fallrohre,
-      rinneHoehe: rinneHoehe
+      rinneHoehe: rinneHoehe,
+      winterSoloAktiv: winterSoloAktiv,
+      winterSoloFlaeche: winterSoloFlaeche,
+      winterSoloMaterial: winterSoloMaterial
     },
     preise: {
       monatsNetto: parseFloat(g.toFixed(2)),
       monatsBrutto: parseFloat(brutto.toFixed(2)),
       tgNetto: parseFloat((tgPreis || 0).toFixed(2)),
       rinneNetto: parseFloat((rinnePreis || 0).toFixed(2)),
+      winterSoloNetto: parseFloat((winterSoloPreis || 0).toFixed(2)),
       positionen: {
         treppenhaus: positionTreppenhaus,
         garten: positionGarten,
@@ -558,7 +610,8 @@ function sendeAnfrage(){
     + "• Monatspauschale (NETTO):  " + weltNetto + "\n"
     + "• Monatspauschale (BRUTTO): " + weltBrutto + "\n"
     + "• Einmalige Garagenreinigung: " + weltTgNetto + "\n"
-    + "• Einmalige Dachrinnenreinigung: " + weltRinneNetto + "\n\n"
+    + "• Einmalige Dachrinnenreinigung: " + weltRinneNetto + "\n"
+    + "• Eigenständiger Winterdienst: " + weltWinterSoloNetto + "\n\n"
     + "Bitte setzen Sie sich zwecks einer Terminvereinbarung und Objektbegehung mit dem Kunden in Verbindung.\n\n"
     + "Mit freundlichen Grüßen,\n" + n;
 
@@ -636,6 +689,7 @@ function befuelleAdminFormular(){
   document.getElementById('cfg_garten').value = CONFIG.preisGarten;
   document.getElementById('cfg_winter').value = CONFIG.preisWinter;
   document.getElementById('cfg_winter_qm').value = CONFIG.winterPreisProQm;
+  document.getElementById('cfg_winter_solo_mindest').value = CONFIG.winterStandaloneMindestpreis;
   document.getElementById('cfg_tonnen').value = CONFIG.preisTonnen;
   document.getElementById('cfg_fahrstuhl').value = CONFIG.preisFahrstuhl;
   document.getElementById('cfg_etage').value = CONFIG.preisEtage;
@@ -668,6 +722,7 @@ function speichereEinstellungen(){
   CONFIG.preisGarten = num('cfg_garten', DEFAULT_CONFIG.preisGarten);
   CONFIG.preisWinter = num('cfg_winter', DEFAULT_CONFIG.preisWinter);
   CONFIG.winterPreisProQm = num('cfg_winter_qm', DEFAULT_CONFIG.winterPreisProQm);
+  CONFIG.winterStandaloneMindestpreis = num('cfg_winter_solo_mindest', DEFAULT_CONFIG.winterStandaloneMindestpreis);
   CONFIG.preisTonnen = num('cfg_tonnen', DEFAULT_CONFIG.preisTonnen);
   CONFIG.preisFahrstuhl = num('cfg_fahrstuhl', DEFAULT_CONFIG.preisFahrstuhl);
   CONFIG.preisEtage = num('cfg_etage', DEFAULT_CONFIG.preisEtage);
