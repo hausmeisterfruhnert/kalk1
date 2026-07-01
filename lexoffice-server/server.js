@@ -118,33 +118,69 @@ async function legeKontaktAn({ name, email, rechnungsadresse }) {
 /* ------------------------------------------------------------------ */
 async function legeAngebotAn({ contactId, kundenName, hatAdresse, objektAdresse, details, preise }) {
   const lineItems = [];
+  const pos = preise.positionen || {};
 
-  const leistungenListe = [];
-  if (details.reinigung) leistungenListe.push('Treppenhausreinigung (wöchentlich)');
-  if (details.fahrstuhl) leistungenListe.push('Fahrstuhlreinigung');
-  if (details.garten) leistungenListe.push('Gartenpflege & Rasenmähen');
-  if (details.winter) {
-    const winterText = details.winterFlaeche && details.winterFlaeche > 0
-      ? ('Winterdienst-Pauschale (' + details.winterFlaeche + ' qm, ' + (details.winterMaterial === 'salz' ? 'Streusalz' : 'Splitt') + ')')
-      : 'Winterdienst-Pauschale';
-    leistungenListe.push(winterText);
+  const macheZeile = (name, betrag, beschreibung) => {
+    if (!betrag || betrag <= 0) return;
+    lineItems.push({
+      type: 'custom',
+      name: name,
+      description: beschreibung || undefined,
+      quantity: 1,
+      unitName: 'Monat',
+      unitPrice: {
+        currency: 'EUR',
+        netAmount: betrag,
+        taxRatePercentage: 19
+      }
+    });
+  };
+
+  if (details.reinigung) {
+    macheZeile(
+      'Treppenhausreinigung (wöchentlich) – ' + details.einheiten + ' WE',
+      pos.treppenhaus,
+      details.stockwerkText ? ('Höchstes Stockwerk: ' + details.stockwerkText) : undefined
+    );
   }
-  if (details.tonnen) leistungenListe.push('Mülltonnendienst (App)');
+  if (details.garten) {
+    macheZeile(
+      'Gartenpflege & Rasenmähen – ' + details.einheiten + ' WE',
+      pos.garten,
+      details.gartenText ? ('Gartenfläche: ' + details.gartenText) : undefined
+    );
+  }
+  if (details.winter) {
+    const winterName = details.winterFlaeche && details.winterFlaeche > 0
+      ? ('Winterdienst-Pauschale (' + details.winterFlaeche + ' qm, ' + (details.winterMaterial === 'salz' ? 'Streusalz' : 'Splitt') + ')')
+      : ('Winterdienst-Pauschale – ' + details.einheiten + ' WE');
+    macheZeile(winterName, pos.winter);
+  }
+  if (details.tonnen) {
+    macheZeile('Mülltonnendienst (App) – ' + details.einheiten + ' WE', pos.tonnen);
+  }
+  if (details.fahrstuhl) {
+    macheZeile('Fahrstuhlreinigung', pos.fahrstuhl);
+  }
+  if (pos.korrektur && Math.abs(pos.korrektur) > 0.01) {
+    macheZeile('Individuelle Preisanpassung', pos.korrektur, 'Manueller Aufschlag/Nachlass für dieses Angebot');
+  }
 
-  lineItems.push({
-    type: 'custom',
-    name: 'Facility-Management Monatspauschale – ' + details.einheiten + ' WE',
-    description: 'Enthaltene Leistungen:\n- ' + leistungenListe.join('\n- ')
-      + (details.stockwerkText ? ('\nHöchstes Stockwerk: ' + details.stockwerkText) : '')
-      + (details.gartenText ? ('\nGartenfläche: ' + details.gartenText) : ''),
-    quantity: 1,
-    unitName: 'Monat',
-    unitPrice: {
-      currency: 'EUR',
-      netAmount: preise.monatsNetto,
-      taxRatePercentage: 19
-    }
-  });
+  // Falls aus irgendeinem Grund keine Einzelposition zustande kam (Rand-/Fehlerfall),
+  // trotzdem den Gesamtpreis als Sicherheitsnetz anzeigen.
+  if (lineItems.length === 0) {
+    lineItems.push({
+      type: 'custom',
+      name: 'Facility-Management Monatspauschale – ' + details.einheiten + ' WE',
+      quantity: 1,
+      unitName: 'Monat',
+      unitPrice: {
+        currency: 'EUR',
+        netAmount: preise.monatsNetto,
+        taxRatePercentage: 19
+      }
+    });
+  }
 
   if (details.tgAktiv && preise.tgNetto && preise.tgNetto > 0) {
     lineItems.push({
