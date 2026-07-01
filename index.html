@@ -2,250 +2,680 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fruhnert Hausmeisterservice - Kalkulator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Objekt-Kalkulator</title>
 <style>
-    body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f5f7;color:#1d1d1f;padding:20px;display:flex;justify-content:center}
-    .card{background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);padding:24px;max-width:420px;width:100%;box-sizing:border-box}
-    h2{text-align:center;color:#1e3d59;margin:0 0 20px;font-size:22px}.form-group{margin-bottom:16px}
-    .form-row{display:flex !important;gap:12px !important;width:100% !important;box-sizing:border-box}
-    .form-row .form-group{flex:1 !important;width:auto !important;margin-bottom:12px !important}
-    label{display:block;font-weight:600;margin-bottom:6px;font-size:14px}
-    input{width:100%;padding:10px;border:1px solid #d2d2d7;border-radius:8px;font-size:16px;box-sizing:border-box}
-    input::placeholder {font-size:12px;color:#86868b;}
-    .sub-field{background:#f5f5f7;padding:12px;border-radius:8px;margin-bottom:16px;display:none;box-sizing:border-box}
-    .switch-group{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f7}
-    .switch{position:relative;display:inline-block;width:50px;height:28px}.switch input{opacity:0;width:0;height:0}
-    .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#e5e5ea;transition:.3s;border-radius:34px}
-    .slider:before {position:absolute;content:"";height:24px;width:24px;left:2px;bottom:2px;background:#fff;transition:.3s;border-radius:50%}
-    input:checked+.slider{background:#34c759}input:checked+.slider:before{transform:translateX(22px)}
-    .result-box{background:#f5f5f7;border-radius:8px;padding:16px;margin-top:20px;font-size:15px}
-    .result-line{display:flex;justify-content:space-between;margin-bottom:8px}
-    .result-line.total{font-weight:700;font-size:18px;border-top:1px solid #d2d2d7;padding-top:8px;margin-top:8px}
-    .result-line.extra{color:#1e3d59;font-weight:600;border-top:1px dashed #d2d2d7;padding-top:8px;margin-top:8px;}
-    .hint{font-size:11px;color:#86868b;text-align:center;margin-top:12px;background:#fff9e6;padding:8px;border-radius:6px;border:1px solid #ffe0b2}
-    .warn-hint{font-size:11px;color:#b78103;text-align:center;margin-top:8px;background:#fff3cd;padding:8px;border-radius:6px;border:1px solid #ffeeba;display:none;}
-    .contact-box{margin-top:20px;border-top:2px dashed #d2d2d7;padding-top:20px}
-    .btn-submit{background:#1e3d59;color:#fff;border:none;padding:12px;font-size:16px;font-weight:600;border-radius:8px;width:100%;cursor:pointer}
-    .section-title{color:#86868b;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin:24px 0 8px 0;border-bottom:1px solid #d2d2d7;padding-bottom:6px}
-    .pauschale-hint{font-size:12px;color:#86868b;margin:14px 0 6px 0;font-style:italic;line-height:1.45;background:#f5f5f7;padding:10px;border-radius:8px}
-    .tel-info{font-size:12px;color:#86868b;text-align:center;margin-top:-10px;margin-bottom:15px;}
-    /* Sichtbares Feld erhält die ID für das JavaScript */
-    .developer-credits{font-size:10px;color:#c7c7cc;text-align:center;margin-top:12px;letter-spacing:0.3px}
+body{font-family:-apple-system,sans-serif;background:#f5f5f7;color:#1d1d1f;padding:20px;display:flex;justify-content:center}
+.card{background:#fff;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);padding:24px;max-width:420px;width:100%}
+h2{text-align:center;color:#0071e3;margin:0 0 20px}
+.form-group{margin-bottom:16px}
+.form-row{display:flex;gap:12px}
+.form-row .form-group{flex:1}
+label{display:block;font-weight:600;margin-bottom:6px;font-size:14px}
+input{width:100%;padding:10px;border:1px solid #d2d2d7;border-radius:8px;font-size:16px;box-sizing:border-box}
+input::placeholder{font-size:12px;color:#86868b}
+.sub-field{background:#f5f5f7;padding:12px;border-radius:8px;margin-bottom:16px;display:none}
+.switch-group{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f7}
+.switch{position:relative;display:inline-block;width:50px;height:28px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#e5e5ea;transition:.3s;border-radius:34px}
+.slider:before{position:absolute;content:"";height:24px;width:24px;left:2px;bottom:2px;background:#fff;transition:.3s;border-radius:50%}
+input:checked+.slider{background:#34c759}
+input:checked+.slider:before{transform:translateX(22px)}
+.result-box{background:#f5f5f7;border-radius:8px;padding:16px;margin-top:20px;font-size:15px}
+.result-line{display:flex;justify-content:space-between;margin-bottom:8px;gap:8px}
+.result-line.total{font-weight:700;font-size:18px;border-top:1px solid #d2d2d7;padding-top:8px;margin-top:8px}
+.result-line.extra{color:#0071e3;font-weight:600;border-top:1px dashed #d2d2d7;padding-top:8px;margin-top:8px}
+.hint{font-size:11px;color:#86868b;text-align:center;margin-top:12px;background:#fff9e6;padding:8px;border-radius:6px;border:1px solid #ffe0b2}
+.warn-hint{font-size:11px;color:#b78103;text-align:center;margin-top:8px;background:#fff3cd;padding:8px;border-radius:6px;border:1px solid #ffeeba;display:none}
+.contact-box{margin-top:20px;border-top:2px dashed #d2d2d7;padding-top:20px}
+.btn-submit{background:#0071e3;color:#fff;border:none;padding:12px;font-size:16px;font-weight:600;border-radius:8px;width:100%;cursor:pointer}
+.btn-submit:active{opacity:.85}
+
+/* Zahnrad / Admin */
+.gear-btn{position:fixed;bottom:18px;right:18px;width:44px;height:44px;border-radius:50%;background:#fff;border:1px solid #d2d2d7;box-shadow:0 2px 8px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:50;opacity:.55;transition:opacity .2s}
+.gear-btn:hover{opacity:1}
+.gear-btn svg{width:22px;height:22px;fill:#6e6e73}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border-radius:12px;padding:22px;max-width:420px;width:100%;max-height:85vh;overflow-y:auto}
+.modal-box h3{margin:0 0 14px;color:#0071e3}
+.modal-box .form-group{margin-bottom:12px}
+.modal-box label{font-size:13px;font-weight:600}
+.admin-note{font-size:11px;color:#86868b;background:#f5f5f7;padding:8px;border-radius:6px;margin-bottom:14px;line-height:1.5}
+.admin-section-title{font-size:13px;font-weight:700;color:#0071e3;margin:18px 0 8px;border-top:1px solid #f0f0f0;padding-top:14px}
+.modal-btn-row{display:flex;gap:10px;margin-top:16px}
+.btn-secondary{background:#f5f5f7;color:#1d1d1f;border:1px solid #d2d2d7;padding:10px;font-size:14px;font-weight:600;border-radius:8px;flex:1;cursor:pointer}
+.btn-primary{background:#0071e3;color:#fff;border:none;padding:10px;font-size:14px;font-weight:600;border-radius:8px;flex:1;cursor:pointer}
+.error-text{color:#d70015;font-size:12px;margin-top:6px;display:none}
 </style>
 </head>
 <body>
+
 <div class="card">
-    <h2>Fruhnert Hausmeisterservice</h2>
-    <div class="tel-info">📞 Telefon: 08141 50 98 95 6</div>
-    
+  <h2>Objekt-Kalkulator</h2>
+
+  <div class="form-row">
+    <div class="form-group"><label>Wohneinheiten:</label>
+      <input type="number" id="einheiten" value="4" min="1" oninput="berechnePreis()"></div>
+    <div class="form-group"><label>Höchstes Stockwerk:</label>
+      <input type="number" id="etagen" min="1" placeholder="Ab 3. OG angeben" oninput="berechnePreis()"></div>
+  </div>
+
+  <div class="form-group"><label>Gartenfläche (in qm):</label>
+    <input type="number" id="garten_qm" min="0" placeholder="Bis 300 qm inklusive" oninput="berechnePreis()"></div>
+
+  <div class="switch-group"><label>Treppenhausreinigung (wöchentlich)</label>
+    <label class="switch"><input type="checkbox" id="reinigung" checked onchange="berechnePreis()"><span class="slider"></span></label></div>
+  <div class="switch-group"><label>Fahrstuhl vorhanden (+15&nbsp;€&nbsp;/&nbsp;Mon.)</label>
+    <label class="switch"><input type="checkbox" id="fahrstuhl" onchange="berechnePreis()"><span class="slider"></span></label></div>
+  <div class="switch-group"><label>Gartenpflege &amp; Rasenmähen</label>
+    <label class="switch"><input type="checkbox" id="garten" checked onchange="berechnePreis()"><span class="slider"></span></label></div>
+  <div class="switch-group"><label>Winterdienst-Pauschale</label>
+    <label class="switch"><input type="checkbox" id="winter" checked onchange="berechnePreis()"><span class="slider"></span></label></div>
+  <div id="winter_feld" class="sub-field">
     <div class="form-row">
-        <div class="form-group"><label>Wohneinheiten:</label><input type="number" id="einheiten" value="4" oninput="berechnePreis()"></div>
-        <div class="form-group"><label>Höchstes Stockwerk:</label><input type="number" id="etagen" placeholder="Ab 3. OG angeben" oninput="berechnePreis()"></div>
+      <div class="form-group"><label>Zu räumende Fläche (qm):</label><input type="number" id="winter_flaeche" min="0" placeholder="leer = Standardpauschale" oninput="berechnePreis()"></div>
+      <div class="form-group"><label>Streumittel:</label>
+        <select id="winter_material" onchange="berechnePreis()" style="width:100%;padding:10px;border:1px solid #d2d2d7;border-radius:8px;font-size:14px;box-sizing:border-box">
+          <option value="splitt">Splitt</option>
+          <option value="salz">Streusalz</option>
+        </select>
+      </div>
     </div>
-    
-    <div class="form-group"><label>Gartenfläche (in qm):</label><input type="number" id="garten_qm" placeholder="Bis 300 qm inklusive" oninput="berechnePreis()"></div>
-    <div class="switch-group"><label>Treppenhausreinigung (wöchentlich)</label><label class="switch"><input type="checkbox" id="reinigung" checked onchange="berechnePreis()"><span class="slider"></span></label></div>
-    <div class="switch-group"><label>Fahrstuhl vorhanden (+15€ / Mon.)</label><label class="switch"><input type="checkbox" id="fahrstuhl" onchange="berechnePreis()"><span class="slider"></span></label></div>
-    <div class="switch-group"><label>Gartenpflege & Rasenmähen</label><label class="switch"><input type="checkbox" id="garten" checked onchange="berechnePreis()"><span class="slider"></span></label></div>
-    <div class="switch-group"><label>Winterdienst-Pauschale</label><label class="switch"><input type="checkbox" id="winter" checked onchange="berechnePreis()"><span class="slider"></span></label></div>
-    <div class="switch-group"><label>Mülltonnendienst per App</label><label class="switch"><input type="checkbox" id="tonnen" checked onchange="berechnePreis()"><span class="slider"></span></label></div>
-    
-    <div class="section-title">Einmalige Zusatzleistungen</div>
+    <div class="warn-hint" style="display:block">ℹ️ Hinweis: Streusalz ist in vielen Gemeinden aus Umweltschutzgründen eingeschränkt oder verboten – bitte örtliche Satzung prüfen. Splitt ist meist die zulässige Standardlösung.</div>
+  </div>
+  <div class="switch-group"><label>Mülltonnendienst per App</label>
+    <label class="switch"><input type="checkbox" id="tonnen" checked onchange="berechnePreis()"><span class="slider"></span></label></div>
+  <div class="switch-group"><label>Tiefgaragenreinigung (Nassreinigung)</label>
+    <label class="switch"><input type="checkbox" id="tg_aktiv" onchange="berechnePreis()"><span class="slider"></span></label></div>
 
-    <div class="switch-group"><label>Tiefgaragenreinigung (Nassreinigung)</label><label class="switch"><input type="checkbox" id="tg_aktiv" onchange="berechnePreis()"><span class="slider"></span></label></div>
-    <div id="tg_feld" class="sub-field">
-        <div class="form-row">
-            <div class="form-group"><label>Stellplätze:</label><input type="number" id="tg_plaetze" value="0" min="0" oninput="berechnePreis()"></div>
-            <div class="form-group"><label>TG-Fläche (qm):</label><input type="number" id="tg_qm" value="0" min="0" oninput="berechnePreis()"></div>
-        </div>
-        <div id="tg_warnung" class="warn-hint">⚠️ Hinweis: Die qm-Fläche weicht stark von der Stellplatzanzahl ab. Bitte Daten prüfen.</div>
+  <div id="tg_feld" class="sub-field">
+    <div class="form-row">
+      <div class="form-group"><label>Stellplätze:</label><input type="number" id="tg_plaetze" value="0" min="0" oninput="berechnePreis()"></div>
+      <div class="form-group"><label>TG-Fläche (qm):</label><input type="number" id="tg_qm" value="0" min="0" oninput="berechnePreis()"></div>
     </div>
+    <div id="tg_warnung" class="warn-hint">⚠️ Hinweis: Die qm-Fläche weicht stark von der Stellplatzanzahl ab (Richtwert: ca. 25 qm pro Platz inkl. Fahrgasse). Bitte Daten prüfen.</div>
+  </div>
 
-    <div class="switch-group"><label>Dachrinnenreinigung (Dachrinnensauger mit Kamera)</label><label class="switch"><input type="checkbox" id="rinne_aktiv" onchange="berechnePreis()"><span class="slider"></span></label></div>
-    <div id="rinne_feld" class="sub-field">
-        <div class="form-row">
-            <div class="form-group"><label>Länge vorne (m):</label><input type="number" id="rinne_vorne" value="0" min="0" oninput="berechnePreis()"></div>
-            <div class="form-group"><label>Länge hinten (m):</label><input type="number" id="rinne_hinten" value="0" min="0" oninput="berechnePreis()"></div>
-        </div>
-        <div class="form-row">
-            <div class="form-group"><label>Anzahl Fallrohre:</label><input type="number" id="fallrohre" value="0" min="0" oninput="berechnePreis()"></div>
-            <div class="form-group"><label>Arbeitshöhe (m):</label><input type="number" id="rinne_hoehe" value="0" min="0" placeholder="z.B. 6" oninput="berechnePreis()"></div>
-        </div>
+  <div class="switch-group"><label>Dachrinnenreinigung (Dachrinnensauger mit Kamera)</label>
+    <label class="switch"><input type="checkbox" id="rinne_aktiv" onchange="berechnePreis()"><span class="slider"></span></label></div>
+  <div id="rinne_feld" class="sub-field">
+    <div class="form-row">
+      <div class="form-group"><label>Länge vorne (m):</label><input type="number" id="rinne_vorne" value="0" min="0" oninput="berechnePreis()"></div>
+      <div class="form-group"><label>Länge hinten (m):</label><input type="number" id="rinne_hinten" value="0" min="0" oninput="berechnePreis()"></div>
     </div>
+    <div class="form-row">
+      <div class="form-group"><label>Anzahl Fallrohre:</label><input type="number" id="fallrohre" value="0" min="0" oninput="berechnePreis()"></div>
+      <div class="form-group"><label>Arbeitshöhe (m):</label><input type="number" id="rinne_hoehe" value="0" min="0" placeholder="z.B. 6" oninput="berechnePreis()"></div>
+    </div>
+  </div>
 
-    <div class="pauschale-hint">💡 **Paket-Tipp:** Beide Leistungen sind auch als feste Integration in die laufende Hausmeisterpauschale (1-mal jährlich) möglich. Der Preis ist dann deutlich günstiger als im Einzelabruf, da wir Ihnen einen Paket-Rabatt gewähren.</div>
+  <div class="result-box">
+    <div class="result-line"><span>Objektgröße:</span><span id="out-einheiten">4 WE</span></div>
+    <div class="result-line"><span>Gartenfläche:</span><span id="out-garten-text">Standard</span></div>
+    <div class="result-line"><span>Satz pro WE (Netto):</span><span id="out-pro-wohnung">–</span></div>
+    <div class="result-line total"><span>Monatspauschale (Netto):</span><span id="out-netto">–</span></div>
+    <div class="result-line" style="font-size:13px;color:#86868b;"><span>inkl. 19% MwSt. (Brutto):</span><span id="out-brutto">–</span></div>
+    <div id="out-tg-box" style="display:none;" class="result-line extra"><span>Einmalige TG-Reinigung (Netto):</span><span id="out-tg-preis">–</span></div>
+    <div id="out-rinne-box" style="display:none;" class="result-line extra"><span>Einmalige Dachrinnenreinigung (Netto):</span><span id="out-rinne-preis">–</span></div>
+  </div>
 
-    <div class="result-box">
-        <div class="result-line"><span>Objektgröße:</span><span id="out-einheiten">4 WE</span></div>
-        <div class="result-line"><span>Gartenfläche:</span><span id="out-garten-text">Standard</span></div>
-        <div class="result-line"><span>Satz pro WE (Netto):</span><span id="out-pro-wohnung">97.50 €</span></div>
-        <div class="result-line total"><span>Monatspauschale (Netto):</span><span id="out-netto">390.00 €</span></div>
-        <div class="result-line" style="font-size:13px;color:#86868b;"><span>inkl. 19% MwSt. (Brutto):</span><span id="out-brutto">464.10 €</span></div>
-        <div id="out-tg-box" style="display:none;" class="result-line extra"><span>Einmalige TG-Reinigung (Netto):</span><span id="out-tg-preis">0.00 €</span></div>
-        <div id="out-rinne-box" style="display:none;" class="result-line extra"><span>Einmalige Rinne-Reinigung (Netto):</span><span id="out-rinne-preis">0.00 €</span></div>
+  <div class="hint"><strong>⚠️ Wichtiger Hinweis:</strong> Grober Richtwert für Standardkonditionen. Finaler Preis nach Begehung.</div>
+
+  <div class="contact-box">
+    <label style="color:#0071e3;font-size:16px;display:block;margin-bottom:12px">Unverbindliches Angebot anfordern</label>
+    <div class="form-group"><input type="text" id="kunde_name" placeholder="Ihr Name / Hausverwaltung" required></div>
+    <div class="form-group">
+      <input type="email" id="kunde_email" placeholder="Ihre E-Mail-Adresse" required>
+      <div class="error-text" id="email_error">Bitte eine gültige E-Mail-Adresse eintragen.</div>
     </div>
-    <div class="hint"><strong>⚠️ Wichtiger Hinweis:</strong> Grober Richtwert für Standardkonditionen. Finaler Preis nach Begehung.</div>
-    
-    <div class="contact-box">
-        <label style="color:#1e3d59;font-size:16px;display:block;margin-bottom:12px;font-weight:700;">Unverbindliches Angebot anfordern</label>
-        <div class="form-group"><input type="text" id="kunde_name" placeholder="Ihr Name / Hausverwaltung" required></div>
-        <div class="form-group"><input type="email" id="kunde_email" placeholder="Ihre E-Mail-Adresse" required></div>
-        <div class="form-group"><input type="text" id="kunde_adresse" placeholder="Objektadresse (Straße, PLZ, Ort)"></div>
-        <button class="btn-submit" onclick="sendeAnfrage()">Konkretes Angebot anfordern</button>
-    </div>
-    
-    <!-- Die Box wartet auf die automatische Befüllung durch das JavaScript -->
-    <div class="developer-credits" id="dev-box"></div>
+    <div class="form-group"><input type="text" id="kunde_adresse" placeholder="Objektadresse (Straße, PLZ, Ort) – optional"></div>
+    <button class="btn-submit" onclick="sendeAnfrage()">Konkretes Angebot anfordern</button>
+  </div>
 </div>
-<script>
-/* 
- * Encrypted Code Area - System Integrity Check
- * _0x5a2f: Versteckte Urheberrechts-Verankerung im Quelltext
- */
-const _0x5a2f = [0x45,0x6e,0x74,0x77,0x69,0x63,0x6b,0x65,0x6c,0x74,0x20,0x76,0x6f,0x6e,0x20,0x46,0x72,0x75,0x68,0x6e,0x65,0x72,0x74,0x20,0x41,0x6e,0x64,0x72,0x65,0x61,0x73];
 
-let weltNetto="390.00 €",weltBrutto="464.10 €",weltTgNetto="0.00 €",weltRinneNetto="0.00 €",weltDetails="";
+<!-- Zahnrad: Admin-Zugang -->
+<div class="gear-btn" onclick="oeffnePasswortAbfrage()" title="Admin-Bereich">
+  <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+</div>
+
+<!-- Passwort-Modal -->
+<div class="modal-overlay" id="pw_modal">
+  <div class="modal-box">
+    <h3>Admin-Bereich</h3>
+    <div class="form-group">
+      <label>Passwort:</label>
+      <input type="password" id="pw_input" onkeydown="if(event.key==='Enter')pruefePasswort()">
+      <div class="error-text" id="pw_error">Falsches Passwort.</div>
+    </div>
+    <div class="modal-btn-row">
+      <button class="btn-secondary" onclick="schliesseModal('pw_modal')">Abbrechen</button>
+      <button class="btn-primary" onclick="pruefePasswort()">Bestätigen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin-Einstellungen-Modal -->
+<div class="modal-overlay" id="admin_modal">
+  <div class="modal-box">
+    <h3>Preis-Einstellungen</h3>
+    <div class="admin-note">Diese Werte werden lokal in diesem Browser gespeichert (Provisorium). Eine geräteübergreifende Speicherung über eine Datenbank folgt später.</div>
+
+    <div class="admin-section-title">Basispreise pro Wohneinheit (€ / Monat)</div>
+    <div class="form-row">
+      <div class="form-group"><label>Treppenhausreinigung</label><input type="number" id="cfg_treppenhaus" step="0.5"></div>
+      <div class="form-group"><label>Gartenpflege</label><input type="number" id="cfg_garten" step="0.5"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Winterdienst (Standard-Fallback, falls keine Fläche angegeben)</label><input type="number" id="cfg_winter" step="0.5"></div>
+      <div class="form-group"><label>Mülltonnendienst</label><input type="number" id="cfg_tonnen" step="0.5"></div>
+    </div>
+    <div class="form-group"><label>Winterdienst € je qm (bei angegebener Fläche)</label><input type="number" id="cfg_winter_qm" step="0.05"></div>
+
+    <div class="admin-section-title">Zuschläge &amp; Rabatte</div>
+    <div class="form-row">
+      <div class="form-group"><label>Fahrstuhl (€ / Mon.)</label><input type="number" id="cfg_fahrstuhl" step="0.5"></div>
+      <div class="form-group"><label>€ je Etage &gt; 2. OG</label><input type="number" id="cfg_etage" step="0.5"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Rabatt ab 5 WE (%)</label><input type="number" id="cfg_rabatt5" step="1"></div>
+      <div class="form-group"><label>Rabatt ab 10 WE (%)</label><input type="number" id="cfg_rabatt10" step="1"></div>
+    </div>
+    <div class="form-group"><label>Rabatt ab 20 WE (%)</label><input type="number" id="cfg_rabatt20" step="1"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Mindestpreis bei nur 1 Leistung (€)</label><input type="number" id="cfg_mindest" step="5"></div>
+      <div class="form-group"><label>Mindestpreis ab 2 Leistungen (€)</label><input type="number" id="cfg_mindest_mehrfach" step="5"></div>
+    </div>
+
+    <div class="admin-section-title">Garten – Mehrfläche</div>
+    <div class="form-row">
+      <div class="form-group"><label>Inklusiv-Fläche (qm)</label><input type="number" id="cfg_garten_schwelle" step="10"></div>
+      <div class="form-group"><label>€ je qm darüber</label><input type="number" id="cfg_garten_qm_preis" step="0.05"></div>
+    </div>
+
+    <div class="admin-section-title">Tiefgarage</div>
+    <div class="form-row">
+      <div class="form-group"><label>€ je qm</label><input type="number" id="cfg_tg_qm" step="0.1"></div>
+      <div class="form-group"><label>€ je Stellplatz</label><input type="number" id="cfg_tg_platz" step="1"></div>
+    </div>
+    <div class="form-group"><label>TG-Mindestpreis (€)</label><input type="number" id="cfg_tg_mindest" step="5"></div>
+
+    <div class="admin-section-title">Dachrinnenreinigung</div>
+    <div class="form-row">
+      <div class="form-group"><label>Grundpreis (€)</label><input type="number" id="cfg_rinne_grund" step="5"></div>
+      <div class="form-group"><label>€ je Meter</label><input type="number" id="cfg_rinne_meter" step="0.5"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>€ je Fallrohr</label><input type="number" id="cfg_rinne_fallrohr" step="1"></div>
+      <div class="form-group"><label>Zuschlag 4–7m Höhe (€)</label><input type="number" id="cfg_rinne_zuschlag_mittel" step="1"></div>
+    </div>
+    <div class="form-group"><label>Zuschlag &gt;7m Höhe (€)</label><input type="number" id="cfg_rinne_zuschlag_hoch" step="1"></div>
+
+    <div class="admin-section-title">Manueller Korrekturfaktor (nur für dieses Angebot / diese Sitzung)</div>
+    <div class="admin-note">Für Einzelfälle wie besonders hochwertige Objekte. Wird nicht dauerhaft gespeichert und setzt sich beim nächsten Laden der Seite zurück.</div>
+    <div class="form-row">
+      <div class="form-group"><label>Aufschlag (%)</label><input type="number" id="cfg_korrektur_prozent" step="1" value="0"></div>
+      <div class="form-group"><label>Aufschlag fix (€)</label><input type="number" id="cfg_korrektur_fix" step="5" value="0"></div>
+    </div>
+
+    <div class="modal-btn-row">
+      <button class="btn-secondary" onclick="setzeStandardwerte()">Zurücksetzen</button>
+      <button class="btn-primary" onclick="speichereEinstellungen()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   FIRMEN-E-MAIL — bitte durch eure echte Adresse ersetzen!
+   ============================================================ */
+const FIRMEN_EMAIL = "info@hausmeister-fruhnert.de";
+
+/* Admin-Passwort — bitte bei Bedarf im Code anpassen */
+const ADMIN_PASSWORT = "admin2026";
+
+const STORAGE_KEY = "kalkulator_preis_config_v1";
+
+const DEFAULT_CONFIG = {
+  preisTreppenhaus: 32,
+  preisGarten: 28,
+  preisWinter: 34,
+  preisTonnen: 11,
+  preisFahrstuhl: 15,
+  preisEtage: 15,
+  winterPreisProQm: 1.20,
+  rabatt5: 5,     // in %
+  rabatt10: 10,   // in %
+  rabatt20: 15,   // in %
+  mindestpreis: 150,
+  mindestpreisMehrfach: 250,
+  gartenSchwelle: 300,
+  gartenQmPreis: 0.20,
+  tgQmPreis: 2.0,
+  tgPlatzPreis: 22,
+  tgMindestpreis: 290,
+  rinneGrundpreis: 220,
+  rinnePreisProMeter: 11,
+  rinnePreisProFallrohr: 10,
+  rinneZuschlagMittel: 19,   // Zuschlag bei Arbeitshöhe > 4m bis 7m
+  rinneZuschlagHoch: 75,     // Zuschlag bei Arbeitshöhe > 7m
+  korrekturProzent: 0,
+  korrekturFix: 0
+};
+
+let CONFIG = ladeConfig();
+
+function ladeConfig(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const gespeichert = JSON.parse(raw);
+      return Object.assign({}, DEFAULT_CONFIG, gespeichert, {korrekturProzent:0, korrekturFix:0});
+    }
+  }catch(e){ console.warn("Config konnte nicht geladen werden, nutze Standardwerte.", e); }
+  return Object.assign({}, DEFAULT_CONFIG);
+}
+
+function speichereConfigDauerhaft(cfgOhneKorrektur){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cfgOhneKorrektur));
+  }catch(e){ console.warn("Config konnte nicht gespeichert werden.", e); }
+}
+
+/* ---------------- Preisberechnung ---------------- */
+
+let weltNetto="", weltBrutto="", weltTgNetto="", weltRinneNetto="", weltDetails="";
+let weltStrukturiert = null; // für die Lexoffice-Anbindung
+
+/* ============================================================
+   RENDER-SERVER-ADRESSE — nach dem Deployment hier eintragen!
+   Beispiel: "https://kalkulator-lexoffice-server.onrender.com"
+   ============================================================ */
+const LEXOFFICE_SERVER_URL = "https://kalk-4w0p.onrender.com";
 
 function berechnePreis(){
-    let n=parseInt(document.getElementById('einheiten').value)||4,
-        e=document.getElementById('etagen').value,
-        t=document.getElementById('garten_qm').value,
-        a=e!==""?parseInt(e):2,
-        i=t!==""?parseInt(t):0,
-        l=document.getElementById('garten').checked,
-        r=document.getElementById('reinigung').checked,
-        c=document.getElementById('winter').checked,
-        u=document.getElementById('tonnen').checked,
-        o=document.getElementById('fahrstuhl').checked,
-        g_aktiv=document.getElementById('tg_aktiv').checked,
-        rinne_aktiv=document.getElementById('rinne_aktiv').checked,
-        g=0,s=0,tg_preis=0,tg_qm_wert=0,plaetze=0,rinne_preis=0,r_vorne=0,r_hinten=0,f_rohre=0,r_hoehe=0;
+  const n = Math.max(1, parseInt(document.getElementById('einheiten').value) || 4);
 
-    if(g_aktiv){
-        document.getElementById('tg_feld').style.display='block';
-        document.getElementById('out-tg-box').style.display='flex';
-        plaetze=parseInt(document.getElementById('tg_plaetze').value)||0;
-        tg_qm_wert=parseInt(document.getElementById('tg_qm').value)||0;
-        
-        if(tg_qm_wert>0){tg_preis=tg_qm_wert*2.0}else{tg_preis=plaetze*22}
-        if((plaetze>0||tg_qm_wert>0)&&tg_preis<290){tg_preis=290}
-        
-        let geschätztePlaetze=tg_qm_wert/25;
-        if(tg_qm_wert>0&&plaetze>0&&Math.abs(geschätztePlaetze-plaetze)>2){
-            document.getElementById('tg_warnung').style.display='block';
-        }else{
-            document.getElementById('tg_warnung').style.display='none';
-        }
+  const etagenRoh = document.getElementById('etagen').value;
+  const a = etagenRoh !== "" ? Math.max(1, parseInt(etagenRoh) || 2) : 2;
+
+  const gartenQmRoh = document.getElementById('garten_qm').value;
+  const gartenQm = Math.max(0, parseInt(gartenQmRoh) || 0);
+
+  const r = document.getElementById('reinigung').checked;
+  const l = document.getElementById('garten').checked;
+  const c = document.getElementById('winter').checked;
+  const u = document.getElementById('tonnen').checked;
+  const o = document.getElementById('fahrstuhl').checked;
+  const tgAktiv = document.getElementById('tg_aktiv').checked;
+  const rinneAktiv = document.getElementById('rinne_aktiv').checked;
+
+  document.getElementById('winter_feld').style.display = c ? 'block' : 'none';
+  const winterFlaeche = Math.max(0, parseFloat(document.getElementById('winter_flaeche').value) || 0);
+  const winterMaterial = document.getElementById('winter_material').value;
+
+  let plaetze = 0, tgQmWert = 0, tgPreis = 0;
+
+  if(tgAktiv){
+    document.getElementById('tg_feld').style.display = 'block';
+    document.getElementById('out-tg-box').style.display = 'flex';
+    plaetze = Math.max(0, parseInt(document.getElementById('tg_plaetze').value) || 0);
+    tgQmWert = Math.max(0, parseInt(document.getElementById('tg_qm').value) || 0);
+
+    if(plaetze === 0 && tgQmWert === 0){
+      document.getElementById('out-tg-preis').innerText = "Bitte Angaben eintragen";
+      document.getElementById('tg_warnung').style.display = 'none';
     }else{
-        document.getElementById('tg_feld').style.display='none';
-        document.getElementById('out-tg-box').style.display='none';
-    }
+      if(tgQmWert > 0){ tgPreis = tgQmWert * CONFIG.tgQmPreis; }
+      else{ tgPreis = plaetze * CONFIG.tgPlatzPreis; }
+      if(tgPreis < CONFIG.tgMindestpreis){ tgPreis = CONFIG.tgMindestpreis; }
 
-    if(rinne_aktiv){
-        document.getElementById('rinne_feld').style.display='block';
-        document.getElementById('out-rinne-box').style.display='flex';
-        r_vorne=parseFloat(document.getElementById('rinne_vorne').value)||0;
-        r_hinten=parseFloat(document.getElementById('rinne_hinten').value)||0;
-        f_rohre=parseInt(document.getElementById('fallrohre').value)||0;
-        r_hoehe=parseFloat(document.getElementById('rinne_hoehe').value)||0;
-        
-        let gesamtLaenge=r_vorne+r_hinten;
-        if(gesamtLaenge>0){
-            rinne_preis=220;
-            rinne_preis+=(gesamtLaenge*11);
-            rinne_preis+=(f_rohre*10);
-            if(r_hoehe>4&&r_hoehe<=7){
-                rinne_preis+=19;
-            }else if(r_hoehe>7){
-                rinne_preis+=75;
-            }
-        }
+      const geschaetztePlaetze = tgQmWert / 25;
+      if(tgQmWert > 0 && plaetze > 0 && Math.abs(geschaetztePlaetze - plaetze) > 2){
+        document.getElementById('tg_warnung').style.display = 'block';
+      }else{
+        document.getElementById('tg_warnung').style.display = 'none';
+      }
+      document.getElementById('out-tg-preis').innerText = tgPreis.toFixed(2) + " €";
+    }
+  }else{
+    document.getElementById('tg_feld').style.display = 'none';
+    document.getElementById('out-tg-box').style.display = 'none';
+    document.getElementById('tg_warnung').style.display = 'none';
+  }
+
+  let rinneVorne = 0, rinneHinten = 0, fallrohre = 0, rinneHoehe = 0, rinnePreis = 0;
+
+  if(rinneAktiv){
+    document.getElementById('rinne_feld').style.display = 'block';
+    document.getElementById('out-rinne-box').style.display = 'flex';
+    rinneVorne = Math.max(0, parseFloat(document.getElementById('rinne_vorne').value) || 0);
+    rinneHinten = Math.max(0, parseFloat(document.getElementById('rinne_hinten').value) || 0);
+    fallrohre = Math.max(0, parseInt(document.getElementById('fallrohre').value) || 0);
+    rinneHoehe = Math.max(0, parseFloat(document.getElementById('rinne_hoehe').value) || 0);
+
+    const gesamtLaenge = rinneVorne + rinneHinten;
+    if(gesamtLaenge === 0 && fallrohre === 0){
+      document.getElementById('out-rinne-preis').innerText = "Bitte Angaben eintragen";
     }else{
-        document.getElementById('rinne_feld').style.display='none';
-        document.getElementById('out-rinne-box').style.display='none';
+      rinnePreis = CONFIG.rinneGrundpreis
+        + (gesamtLaenge * CONFIG.rinnePreisProMeter)
+        + (fallrohre * CONFIG.rinnePreisProFallrohr);
+      if(rinneHoehe > 7){ rinnePreis += CONFIG.rinneZuschlagHoch; }
+      else if(rinneHoehe > 4){ rinnePreis += CONFIG.rinneZuschlagMittel; }
+      document.getElementById('out-rinne-preis').innerText = rinnePreis.toFixed(2) + " €";
     }
+  }else{
+    document.getElementById('rinne_feld').style.display = 'none';
+    document.getElementById('out-rinne-box').style.display = 'none';
+  }
 
-    if(l&&i>300){s=(i-300)*.2}
+  // Basissatz pro WE aus aktiven Leistungen (Winterdienst wird separat berechnet, s.u.)
+  let basisProWE = 0;
+  if(r) basisProWE += CONFIG.preisTreppenhaus;
+  if(l) basisProWE += CONFIG.preisGarten;
+  if(u) basisProWE += CONFIG.preisTonnen;
 
-    let aktiveLeistungen = 0;
-    if(r) aktiveLeistungen++; 
-    if(l) aktiveLeistungen++; 
-    if(c) aktiveLeistungen++; 
-    if(u) aktiveLeistungen++; 
+  // Mengenrabatt, einheitlich über alle Größen
+  let rabattFaktor = 1;
+  if(n >= 20) rabattFaktor = 1 - (CONFIG.rabatt20/100);
+  else if(n >= 10) rabattFaktor = 1 - (CONFIG.rabatt10/100);
+  else if(n >= 5) rabattFaktor = 1 - (CONFIG.rabatt5/100);
 
-    if(n>=5){
-        let p=0;
-        if(r)p+=27.5;
-        if(l)p+=25;
-        if(c)p+=30;
-        if(u)p+=10;
-        if(n>=20){p*=.9}else if(n>=10){p*=.9}
-        g=n*p;
-        if(r&&a>2){g+=(a-2)*15}
+  let g = n * basisProWE * rabattFaktor;
+
+  // Winterdienst: flächenbasiert, wenn Fläche angegeben ist – sonst Rückfall auf WE-Pauschale
+  let winterBeitrag = 0;
+  if(c){
+    if(winterFlaeche > 0){
+      winterBeitrag = winterFlaeche * CONFIG.winterPreisProQm;
     }else{
-        if(r && !l && !c && !u){
-            let d=15+(n*5);
-            g=(d/60)*4.33*45;
-            if(a>2){g+=(a-2)*15}
-        }else{
-            let p=97.5;
-            if(!l)p-=25;
-            if(!r)p-=25;
-            if(!c)p-=30;
-            if(!u)p-=10;
-            g=n*p;
-            if(r&&a>2){g+=(a-2)*15}
-        }
+      winterBeitrag = n * CONFIG.preisWinter * rabattFaktor;
     }
+    g += winterBeitrag;
+  }
 
-    g+=s;
+  // Etagenzuschlag (nur bei aktiver Treppenhausreinigung, nie negativ)
+  const etagenUeberschuss = Math.max(0, a - 2);
+  if(r && etagenUeberschuss > 0){ g += etagenUeberschuss * CONFIG.preisEtage; }
 
-    if(aktiveLeistungen > 1) {
-        if(g<250){g=250}
-    } else {
-        if(g<150){g=150}
+  // Gartenzuschlag bei überdurchschnittlicher Fläche
+  let gartenZuschlag = 0;
+  if(l && gartenQm > CONFIG.gartenSchwelle){
+    gartenZuschlag = (gartenQm - CONFIG.gartenSchwelle) * CONFIG.gartenQmPreis;
+    g += gartenZuschlag;
+  }
+
+  // Mindestpreis VOR dem Fahrstuhl-Zuschlag, damit der Zuschlag nie "verschluckt" wird.
+  // Gestaffelt: bei mehr als einer aktiven Hauptleistung gilt ein höherer Mindestpreis.
+  const aktiveLeistungenAnzahl = [r, l, c, u].filter(Boolean).length;
+  const geltenderMindestpreis = aktiveLeistungenAnzahl > 1 ? CONFIG.mindestpreisMehrfach : CONFIG.mindestpreis;
+  if(g < geltenderMindestpreis){ g = geltenderMindestpreis; }
+
+  if(o){ g += CONFIG.preisFahrstuhl; }
+
+  // Manueller Korrekturfaktor (nur diese Sitzung, admin-gesteuert)
+  if(CONFIG.korrekturProzent){ g *= (1 + CONFIG.korrekturProzent/100); }
+  if(CONFIG.korrekturFix){ g += CONFIG.korrekturFix; }
+
+  const brutto = g * 1.19;
+  const proWohnung = g / n;
+
+  const stockwerkText = a > 2 ? ("bis " + a + ". OG") : "Standard (bis 2. OG)";
+  const gartenText = gartenZuschlag > 0
+    ? (gartenQm + " qm (+" + gartenZuschlag.toFixed(2) + " €)")
+    : "Standard (bis " + CONFIG.gartenSchwelle + " qm)";
+
+  document.getElementById('out-einheiten').innerText = n + " WE / " + stockwerkText;
+  document.getElementById('out-garten-text').innerText = gartenText;
+  document.getElementById('out-pro-wohnung').innerText = proWohnung.toFixed(2) + " €";
+  document.getElementById('out-netto').innerText = g.toFixed(2) + " €";
+  document.getElementById('out-brutto').innerText = brutto.toFixed(2) + " €";
+
+  weltNetto = g.toFixed(2) + " €";
+  weltBrutto = brutto.toFixed(2) + " €";
+  weltTgNetto = tgAktiv ? (document.getElementById('out-tg-preis').innerText) : "Nicht gewünscht";
+  weltRinneNetto = rinneAktiv ? (document.getElementById('out-rinne-preis').innerText) : "Nicht gewünscht";
+
+  let korrekturZeile = "";
+  if(CONFIG.korrekturProzent || CONFIG.korrekturFix){
+    korrekturZeile = "\n⚙️ Manueller Korrekturfaktor angewendet: " +
+      (CONFIG.korrekturProzent ? "+" + CONFIG.korrekturProzent + "% " : "") +
+      (CONFIG.korrekturFix ? "+" + CONFIG.korrekturFix + " €" : "");
+  }
+
+  weltDetails = "--------------------------------------------------\n"
+    + "📌 DETAILS DER LIEGENSCHAFT:\n"
+    + "--------------------------------------------------\n"
+    + "• Anzahl Wohneinheiten: " + n + " WE\n"
+    + "• Höchstes Stockwerk:   " + stockwerkText + "\n"
+    + "• Garten- / Rasenfläche: " + gartenQm + " qm\n"
+    + "• Tiefgarage (Nass):    " + (tgAktiv ? (plaetze + " Stellplätze (" + tgQmWert + " qm)") : "NEIN") + "\n"
+    + "• Dachrinnenreinigung:  " + (rinneAktiv ? ("Vorne " + rinneVorne + "m / Hinten " + rinneHinten + "m, " + fallrohre + " Fallrohre, Höhe " + rinneHoehe + "m") : "NEIN") + "\n\n"
+    + "⚙️ GEWÄHLTE LEISTUNGEN:\n"
+    + "• Treppenhausreinigung:  " + (r ? "JA" : "NEIN") + "\n"
+    + "• Fahrstuhl-Reinigung:   " + (o ? "JA" : "NEIN") + "\n"
+    + "• Gartenpflege & Rasen:  " + (l ? "JA" : "NEIN") + "\n"
+    + "• Winterdienst-Pauschale:" + (c ? (winterFlaeche > 0 ? ("JA (" + winterFlaeche + " qm, " + (winterMaterial === "salz" ? "Streusalz" : "Splitt") + ")") : "JA (Standardpauschale)") : "NEIN") + "\n"
+    + "• Mülltonnendienst (App):" + (u ? "JA" : "NEIN")
+    + korrekturZeile + "\n"
+    + "--------------------------------------------------";
+
+  weltStrukturiert = {
+    details: {
+      einheiten: n,
+      stockwerkText: stockwerkText,
+      gartenText: gartenText,
+      reinigung: r,
+      fahrstuhl: o,
+      garten: l,
+      winter: c,
+      winterFlaeche: winterFlaeche,
+      winterMaterial: winterMaterial,
+      tonnen: u,
+      tgAktiv: tgAktiv,
+      tgPlaetze: plaetze,
+      tgQm: tgQmWert,
+      rinneAktiv: rinneAktiv,
+      rinneVorne: rinneVorne,
+      rinneHinten: rinneHinten,
+      fallrohre: fallrohre,
+      rinneHoehe: rinneHoehe
+    },
+    preise: {
+      monatsNetto: parseFloat(g.toFixed(2)),
+      monatsBrutto: parseFloat(brutto.toFixed(2)),
+      tgNetto: parseFloat((tgPreis || 0).toFixed(2)),
+      rinneNetto: parseFloat((rinnePreis || 0).toFixed(2))
     }
+  };
+}
 
-    if(o){g+=15}
+/* ---------------- Angebotsanfrage ---------------- */
 
-    let m=g*1.19, h=g/n, f=a>2?"bis "+a+". OG":"Standard (bis 2. OG)", v=s>0?i+" qm (+ "+s.toFixed(2)+" €)":"Standard (bis 300 qm)";
-
-    document.getElementById('out-einheiten').innerText=n+" WE / "+f;
-    document.getElementById('out-garten-text').innerText=v;
-    document.getElementById('out-pro-wohnung').innerText=h.toFixed(2)+" €";
-    document.getElementById('out-netto').innerText=g.toFixed(2)+" €";
-    document.getElementById('out-brutto').innerText=m.toFixed(2)+" €";
-    document.getElementById('out-tg-preis').innerText=tg_preis.toFixed(2)+" €";
-    document.getElementById('out-rinne-preis').innerText=rinne_preis.toFixed(2)+" €";
-    
-    weltNetto=g.toFixed(2)+" €";
-    weltBrutto=m.toFixed(2)+" €";
-    weltTgNetto=tg_preis.toFixed(2)+" €";
-    weltRinneNetto=rinne_preis.toFixed(2)+" €";
-
-    weltDetails="--------------------------------------------------\n📌 DETAILS DER LIEGENSCHAFT:\n--------------------------------------------------\n• Anzahl Wohneinheiten: "+n+" WE\n• Höchstes Stockwerk:   "+f+"\n• Garten- / Rasenfläche: "+i+" qm\n• Tiefgarage (Nass):    "+(g_aktiv?plaetze+" Stellplätze ("+tg_qm_wert+" qm)":"NEIN")+"\n• Dachrinnenreinigung:  "+(rinne_aktiv?"Vorne: "+r_vorne+"m / Hinten: "+r_hinten+"m | Fallrohre: "+f_rohre+" | Höhe: "+r_hoehe+"m":"NEIN")+"\n\n⚙️ GEWÄHLTE LEISTUNGEN:\n• Treppenhausreinigung:  "+(r?"JA":"NEIN")+"\n• Fahrstuhl-Reinigung:   "+(o?"JA":"NEIN")+"\n• Gartenpflege & Rasen:  "+(l?"JA":"NEIN")+"\n• Winterdienst-Pauschale:"+(c?"JA":"NEIN")+"\n• Mülltonnendienst (App):"+(u?"JA":"NEIN")+"\n--------------------------------------------------";
+function istGueltigeEmail(email){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 function sendeAnfrage(){
-    let n=document.getElementById('kunde_name').value,
-        e=document.getElementById('kunde_email').value,
-        t=document.getElementById('kunde_adresse').value;
-    if(!n||!e){
-        alert("Bitte Namen und E-Mail eintragen.");
-        return;
-    }
-    let a="info@hausmeister-fruhnert.de",
-        i="Sehr geehrtes Team,\n\nes wurde eine neue Preiskalkulation über das Online-Tool durchgeführt.\n\n👤 KUNDENDATEN:\n• Name / Hausverwaltung: "+n+"\n• E-Mail für Rückfragen: "+e+"\n• Adresse der Liegenschaft: "+(t?t:"Nicht angegeben")+"\n\n"+weltDetails+"\n\n💰 BERECHNETER RICHTPREIS:\n• Monatspauschale (NETTO):  "+weltNetto+"\n• Monatspauschale (BRUTTO): "+weltBrutto+"\n• Einmalige Garagenreinigung: "+weltTgNetto+"\n• Einmalige Rinnenreinigung:  "+weltRinneNetto+"\n\nBitte setzen Sie sich zwecks einer Terminvereinbarung und Objektbegehung mit dem Kunden in Verbindung.\n\nMit freundlichen Grüßen,\n"+n,
-        l="mailto:"+a+"?subject="+encodeURIComponent("Online-Kalkulation: "+n)+"&body="+encodeURIComponent(i);
-    window.location.href=l;
+  const n = document.getElementById('kunde_name').value.trim();
+  const e = document.getElementById('kunde_email').value.trim();
+  const t = document.getElementById('kunde_adresse').value.trim();
+  const emailFehler = document.getElementById('email_error');
+
+  if(!n || !e){
+    alert("Bitte Namen und E-Mail eintragen.");
+    return;
+  }
+  if(!istGueltigeEmail(e)){
+    emailFehler.style.display = 'block';
+    return;
+  }
+  emailFehler.style.display = 'none';
+
+  const betreff = "Online-Kalkulation: " + n;
+  const inhalt = "Sehr geehrtes Team,\n\n"
+    + "es wurde eine neue Preiskalkulation über das Online-Tool durchgeführt.\n\n"
+    + "👤 KUNDENDATEN:\n"
+    + "• Name / Hausverwaltung: " + n + "\n"
+    + "• E-Mail für Rückfragen: " + e + "\n"
+    + "• Adresse der Liegenschaft: " + (t ? t : "Nicht angegeben") + "\n\n"
+    + weltDetails + "\n\n"
+    + "💰 BERECHNETER RICHTPREIS:\n"
+    + "• Monatspauschale (NETTO):  " + weltNetto + "\n"
+    + "• Monatspauschale (BRUTTO): " + weltBrutto + "\n"
+    + "• Einmalige Garagenreinigung: " + weltTgNetto + "\n"
+    + "• Einmalige Dachrinnenreinigung: " + weltRinneNetto + "\n\n"
+    + "Bitte setzen Sie sich zwecks einer Terminvereinbarung und Objektbegehung mit dem Kunden in Verbindung.\n\n"
+    + "Mit freundlichen Grüßen,\n" + n;
+
+  const link = "mailto:" + FIRMEN_EMAIL
+    + "?subject=" + encodeURIComponent(betreff)
+    + "&body=" + encodeURIComponent(inhalt);
+
+  // Lexoffice-Angebot im Hintergrund anlegen (blockiert die E-Mail nicht, falls es fehlschlägt)
+  erstelleLexofficeAngebot(n, e, t);
+
+  window.location.href = link;
 }
 
-window.onload=function(){
-    // Entschlüsselt die Namens-Matrix vollautomatisch beim Laden der Webseite
-    document.getElementById('dev-box').innerText = String.fromCharCode(..._0x5a2f);
-    berechnePreis();
-};
+function erstelleLexofficeAngebot(name, email, objektAdresse){
+  if(!LEXOFFICE_SERVER_URL || LEXOFFICE_SERVER_URL.indexOf("BITTE-") === 0){
+    console.warn("Lexoffice-Server-URL ist noch nicht konfiguriert. Automatisches Angebot wird übersprungen.");
+    return;
+  }
+  if(!weltStrukturiert){
+    console.warn("Keine Preisdaten vorhanden, Lexoffice-Angebot wird übersprungen.");
+    return;
+  }
+
+  fetch(LEXOFFICE_SERVER_URL + "/api/erstelle-angebot", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: name,
+      email: email,
+      objektAdresse: objektAdresse,
+      details: weltStrukturiert.details,
+      preise: weltStrukturiert.preise
+    })
+  })
+  .then(function(antwort){ return antwort.json(); })
+  .then(function(daten){
+    if(daten && daten.erfolg){
+      console.log("Lexoffice-Angebot automatisch angelegt:", daten.angebotId);
+    }else{
+      console.warn("Lexoffice-Angebot konnte nicht angelegt werden:", daten);
+    }
+  })
+  .catch(function(fehler){
+    console.warn("Lexoffice-Server nicht erreichbar:", fehler);
+  });
+}
+
+/* ---------------- Admin-Bereich ---------------- */
+
+function oeffnePasswortAbfrage(){
+  document.getElementById('pw_input').value = "";
+  document.getElementById('pw_error').style.display = 'none';
+  document.getElementById('pw_modal').classList.add('open');
+  setTimeout(() => document.getElementById('pw_input').focus(), 50);
+}
+
+function schliesseModal(id){
+  document.getElementById(id).classList.remove('open');
+}
+
+function pruefePasswort(){
+  const eingabe = document.getElementById('pw_input').value;
+  if(eingabe === ADMIN_PASSWORT){
+    schliesseModal('pw_modal');
+    befuelleAdminFormular();
+    document.getElementById('admin_modal').classList.add('open');
+  }else{
+    document.getElementById('pw_error').style.display = 'block';
+  }
+}
+
+function befuelleAdminFormular(){
+  document.getElementById('cfg_treppenhaus').value = CONFIG.preisTreppenhaus;
+  document.getElementById('cfg_garten').value = CONFIG.preisGarten;
+  document.getElementById('cfg_winter').value = CONFIG.preisWinter;
+  document.getElementById('cfg_winter_qm').value = CONFIG.winterPreisProQm;
+  document.getElementById('cfg_tonnen').value = CONFIG.preisTonnen;
+  document.getElementById('cfg_fahrstuhl').value = CONFIG.preisFahrstuhl;
+  document.getElementById('cfg_etage').value = CONFIG.preisEtage;
+  document.getElementById('cfg_rabatt5').value = CONFIG.rabatt5;
+  document.getElementById('cfg_rabatt10').value = CONFIG.rabatt10;
+  document.getElementById('cfg_rabatt20').value = CONFIG.rabatt20;
+  document.getElementById('cfg_mindest').value = CONFIG.mindestpreis;
+  document.getElementById('cfg_mindest_mehrfach').value = CONFIG.mindestpreisMehrfach;
+  document.getElementById('cfg_garten_schwelle').value = CONFIG.gartenSchwelle;
+  document.getElementById('cfg_garten_qm_preis').value = CONFIG.gartenQmPreis;
+  document.getElementById('cfg_tg_qm').value = CONFIG.tgQmPreis;
+  document.getElementById('cfg_tg_platz').value = CONFIG.tgPlatzPreis;
+  document.getElementById('cfg_tg_mindest').value = CONFIG.tgMindestpreis;
+  document.getElementById('cfg_rinne_grund').value = CONFIG.rinneGrundpreis;
+  document.getElementById('cfg_rinne_meter').value = CONFIG.rinnePreisProMeter;
+  document.getElementById('cfg_rinne_fallrohr').value = CONFIG.rinnePreisProFallrohr;
+  document.getElementById('cfg_rinne_zuschlag_mittel').value = CONFIG.rinneZuschlagMittel;
+  document.getElementById('cfg_rinne_zuschlag_hoch').value = CONFIG.rinneZuschlagHoch;
+  document.getElementById('cfg_korrektur_prozent').value = CONFIG.korrekturProzent;
+  document.getElementById('cfg_korrektur_fix').value = CONFIG.korrekturFix;
+}
+
+function speichereEinstellungen(){
+  const num = (id, fallback) => {
+    const v = parseFloat(document.getElementById(id).value);
+    return isNaN(v) ? fallback : v;
+  };
+
+  CONFIG.preisTreppenhaus = num('cfg_treppenhaus', DEFAULT_CONFIG.preisTreppenhaus);
+  CONFIG.preisGarten = num('cfg_garten', DEFAULT_CONFIG.preisGarten);
+  CONFIG.preisWinter = num('cfg_winter', DEFAULT_CONFIG.preisWinter);
+  CONFIG.winterPreisProQm = num('cfg_winter_qm', DEFAULT_CONFIG.winterPreisProQm);
+  CONFIG.preisTonnen = num('cfg_tonnen', DEFAULT_CONFIG.preisTonnen);
+  CONFIG.preisFahrstuhl = num('cfg_fahrstuhl', DEFAULT_CONFIG.preisFahrstuhl);
+  CONFIG.preisEtage = num('cfg_etage', DEFAULT_CONFIG.preisEtage);
+  CONFIG.rabatt5 = num('cfg_rabatt5', DEFAULT_CONFIG.rabatt5);
+  CONFIG.rabatt10 = num('cfg_rabatt10', DEFAULT_CONFIG.rabatt10);
+  CONFIG.rabatt20 = num('cfg_rabatt20', DEFAULT_CONFIG.rabatt20);
+  CONFIG.mindestpreis = num('cfg_mindest', DEFAULT_CONFIG.mindestpreis);
+  CONFIG.mindestpreisMehrfach = num('cfg_mindest_mehrfach', DEFAULT_CONFIG.mindestpreisMehrfach);
+  CONFIG.gartenSchwelle = num('cfg_garten_schwelle', DEFAULT_CONFIG.gartenSchwelle);
+  CONFIG.gartenQmPreis = num('cfg_garten_qm_preis', DEFAULT_CONFIG.gartenQmPreis);
+  CONFIG.tgQmPreis = num('cfg_tg_qm', DEFAULT_CONFIG.tgQmPreis);
+  CONFIG.tgPlatzPreis = num('cfg_tg_platz', DEFAULT_CONFIG.tgPlatzPreis);
+  CONFIG.tgMindestpreis = num('cfg_tg_mindest', DEFAULT_CONFIG.tgMindestpreis);
+  CONFIG.rinneGrundpreis = num('cfg_rinne_grund', DEFAULT_CONFIG.rinneGrundpreis);
+  CONFIG.rinnePreisProMeter = num('cfg_rinne_meter', DEFAULT_CONFIG.rinnePreisProMeter);
+  CONFIG.rinnePreisProFallrohr = num('cfg_rinne_fallrohr', DEFAULT_CONFIG.rinnePreisProFallrohr);
+  CONFIG.rinneZuschlagMittel = num('cfg_rinne_zuschlag_mittel', DEFAULT_CONFIG.rinneZuschlagMittel);
+  CONFIG.rinneZuschlagHoch = num('cfg_rinne_zuschlag_hoch', DEFAULT_CONFIG.rinneZuschlagHoch);
+
+  // Korrekturfaktor: bewusst NICHT dauerhaft gespeichert (nur für diese Sitzung/dieses Angebot)
+  CONFIG.korrekturProzent = num('cfg_korrektur_prozent', 0);
+  CONFIG.korrekturFix = num('cfg_korrektur_fix', 0);
+
+  const zumSpeichern = Object.assign({}, CONFIG);
+  delete zumSpeichern.korrekturProzent;
+  delete zumSpeichern.korrekturFix;
+  speichereConfigDauerhaft(zumSpeichern);
+
+  schliesseModal('admin_modal');
+  berechnePreis();
+}
+
+function setzeStandardwerte(){
+  if(!confirm("Alle Preise auf Standardwerte zurücksetzen?")) return;
+  CONFIG = Object.assign({}, DEFAULT_CONFIG);
+  localStorage.removeItem(STORAGE_KEY);
+  befuelleAdminFormular();
+  berechnePreis();
+}
+
+window.onload = function(){ berechnePreis(); };
 </script>
 </body>
 </html>
