@@ -461,13 +461,19 @@ function berechnePreis(){
 
   let serviceSumme = betragTreppenhaus + betragGarten + betragWinter + betragTonnen;
 
-  // Mindestpreis gilt für die Hauptleistungen (ohne Fahrstuhl), gestaffelt nach Anzahl aktiver Leistungen.
+  // Mindestpreis gilt nur, wenn überhaupt mindestens eine Pauschal-Leistung gewählt wurde.
+  // Sind alle Hauptleistungen aus (z.B. Kunde will nur Tiefgarage/Dachrinne), entfällt die Monatspauschale komplett.
   const aktiveLeistungenAnzahl = [r, l, c, u].filter(Boolean).length;
-  const geltenderMindestpreis = aktiveLeistungenAnzahl > 1 ? CONFIG.mindestpreisMehrfach : CONFIG.mindestpreis;
-  if(serviceSumme < geltenderMindestpreis){ serviceSumme = geltenderMindestpreis; }
+  if(aktiveLeistungenAnzahl > 0){
+    const geltenderMindestpreis = aktiveLeistungenAnzahl > 1 ? CONFIG.mindestpreisMehrfach : CONFIG.mindestpreis;
+    if(serviceSumme < geltenderMindestpreis){ serviceSumme = geltenderMindestpreis; }
+  }
+
+  // Fahrstuhl-Zuschlag nur sinnvoll, wenn auch eine Hauptleistung aktiv ist (kein reiner Fahrstuhl-Alleinauftrag).
+  const geltenderFahrstuhlBeitrag = aktiveLeistungenAnzahl > 0 ? betragFahrstuhl : 0;
 
   // Fahrstuhl-Zuschlag IMMER erst nach dem Mindestpreis addieren, damit er nie "verschluckt" wird.
-  let g = serviceSumme + betragFahrstuhl;
+  let g = serviceSumme + geltenderFahrstuhlBeitrag;
 
   // Manueller Korrekturfaktor (nur diese Sitzung, admin-gesteuert)
   const gVorKorrektur = g;
@@ -484,7 +490,7 @@ function berechnePreis(){
   const positionGarten = parseFloat((betragGarten * skalierung).toFixed(2));
   const positionWinter = parseFloat((betragWinter * skalierung).toFixed(2));
   const positionTonnen = parseFloat((betragTonnen * skalierung).toFixed(2));
-  const positionFahrstuhl = parseFloat(betragFahrstuhl.toFixed(2));
+  const positionFahrstuhl = parseFloat(geltenderFahrstuhlBeitrag.toFixed(2));
   const positionKorrektur = parseFloat(korrekturBetrag.toFixed(2));
 
   const brutto = g * 1.19;
@@ -497,12 +503,19 @@ function berechnePreis(){
 
   document.getElementById('out-einheiten').innerText = n + " WE / " + stockwerkText;
   document.getElementById('out-garten-text').innerText = gartenText;
-  document.getElementById('out-pro-wohnung').innerText = proWohnung.toFixed(2) + " €";
-  document.getElementById('out-netto').innerText = g.toFixed(2) + " €";
-  document.getElementById('out-brutto').innerText = brutto.toFixed(2) + " €";
 
-  weltNetto = g.toFixed(2) + " €";
-  weltBrutto = brutto.toFixed(2) + " €";
+  if(aktiveLeistungenAnzahl === 0){
+    document.getElementById('out-pro-wohnung').innerText = "–";
+    document.getElementById('out-netto').innerText = "Nicht gewünscht";
+    document.getElementById('out-brutto').innerText = "Nicht gewünscht";
+  }else{
+    document.getElementById('out-pro-wohnung').innerText = proWohnung.toFixed(2) + " €";
+    document.getElementById('out-netto').innerText = g.toFixed(2) + " €";
+    document.getElementById('out-brutto').innerText = brutto.toFixed(2) + " €";
+  }
+
+  weltNetto = aktiveLeistungenAnzahl === 0 ? "Nicht gewünscht" : (g.toFixed(2) + " €");
+  weltBrutto = aktiveLeistungenAnzahl === 0 ? "Nicht gewünscht" : (brutto.toFixed(2) + " €");
   weltTgNetto = tgAktiv ? (document.getElementById('out-tg-preis').innerText) : "Nicht gewünscht";
   weltRinneNetto = rinneAktiv ? (document.getElementById('out-rinne-preis').innerText) : "Nicht gewünscht";
   weltWinterSoloNetto = winterSoloAktiv ? (document.getElementById('out-winterSolo-preis').innerText) : "Nicht gewünscht";
