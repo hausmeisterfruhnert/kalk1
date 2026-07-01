@@ -120,30 +120,34 @@ async function legeAngebotAn({ contactId, kundenName, hatAdresse, objektAdresse,
   const lineItems = [];
   const pos = preise.positionen || {};
 
-  // Objektübersicht als informative Kopfzeile (ohne eigenen Preis) –
-  // fasst alle Eckdaten zusammen, bevor die einzeln bepreisten Positionen folgen.
-  const uebersichtZeilen = [];
-  uebersichtZeilen.push('Wohneinheiten: ' + details.einheiten + ' WE');
-  uebersichtZeilen.push('Höchstes Stockwerk: ' + (details.stockwerkText || 'Standard (bis 2. OG)'));
-  uebersichtZeilen.push('Gartenfläche: ' + (details.gartenText || 'Standard'));
-  uebersichtZeilen.push('Treppenhausreinigung: ' + (details.reinigung ? 'Ja' : 'Nein'));
-  uebersichtZeilen.push('Fahrstuhlreinigung: ' + (details.fahrstuhl ? 'Ja' : 'Nein'));
-  uebersichtZeilen.push('Gartenpflege & Rasenmähen: ' + (details.garten ? 'Ja' : 'Nein'));
-  if (details.winter) {
-    uebersichtZeilen.push('Winterdienst-Pauschale: Ja'
-      + (details.winterFlaeche && details.winterFlaeche > 0
-        ? (' (Gehweg ' + details.winterFlaeche + ' qm, ' + (details.winterMaterial === 'salz' ? 'Streusalz' : 'Splitt') + ')')
-        : ' (Standardpauschale)'));
-  } else {
-    uebersichtZeilen.push('Winterdienst-Pauschale: Nein');
-  }
-  uebersichtZeilen.push('Mülltonnenbereitstellung (App): ' + (details.tonnen ? 'Ja' : 'Nein'));
+  const hatPauschalLeistung = details.reinigung || details.garten || details.winter || details.tonnen;
 
-  lineItems.push({
-    type: 'text',
-    name: 'Hausmeisterservice',
-    description: uebersichtZeilen.join('\n')
-  });
+  if (hatPauschalLeistung) {
+    // Objektübersicht als informative Kopfzeile (ohne eigenen Preis) –
+    // fasst alle Eckdaten zusammen, bevor die einzeln bepreisten Positionen folgen.
+    const uebersichtZeilen = [];
+    uebersichtZeilen.push('Wohneinheiten: ' + details.einheiten + ' WE');
+    uebersichtZeilen.push('Höchstes Stockwerk: ' + (details.stockwerkText || 'Standard (bis 2. OG)'));
+    uebersichtZeilen.push('Gartenfläche: ' + (details.gartenText || 'Standard'));
+    uebersichtZeilen.push('Treppenhausreinigung: ' + (details.reinigung ? 'Ja' : 'Nein'));
+    uebersichtZeilen.push('Fahrstuhlreinigung: ' + (details.fahrstuhl ? 'Ja' : 'Nein'));
+    uebersichtZeilen.push('Gartenpflege & Rasenmähen: ' + (details.garten ? 'Ja' : 'Nein'));
+    if (details.winter) {
+      uebersichtZeilen.push('Winterdienst-Pauschale: Ja'
+        + (details.winterFlaeche && details.winterFlaeche > 0
+          ? (' (Gehweg ' + details.winterFlaeche + ' qm, ' + (details.winterMaterial === 'salz' ? 'Streusalz' : 'Splitt') + ')')
+          : ' (Standardpauschale)'));
+    } else {
+      uebersichtZeilen.push('Winterdienst-Pauschale: Nein');
+    }
+    uebersichtZeilen.push('Mülltonnenbereitstellung (App): ' + (details.tonnen ? 'Ja' : 'Nein'));
+
+    lineItems.push({
+      type: 'text',
+      name: 'Hausmeisterservice',
+      description: uebersichtZeilen.join('\n')
+    });
+  }
 
   const macheZeile = (name, betrag, beschreibung) => {
     if (!betrag || betrag <= 0) return;
