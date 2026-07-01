@@ -87,21 +87,36 @@ async function lexofficeRequest(pfad, methode, body) {
 /* ------------------------------------------------------------------ */
 /* Kontakt in Lexoffice anlegen                                        */
 /* ------------------------------------------------------------------ */
-async function legeKontaktAn({ name, email }) {
+async function legeKontaktAn({ name, email, rechnungsadresse }) {
   const payload = {
     version: 0,
     roles: { customer: {} },
     company: { name: name },
     emailAddresses: { business: [email] }
   };
+
+  const hatAdresse = rechnungsadresse
+    && rechnungsadresse.strasse && rechnungsadresse.plz && rechnungsadresse.ort;
+
+  if (hatAdresse) {
+    payload.addresses = {
+      billing: [{
+        street: rechnungsadresse.strasse,
+        zip: rechnungsadresse.plz,
+        city: rechnungsadresse.ort,
+        countryCode: 'DE'
+      }]
+    };
+  }
+
   const ergebnis = await lexofficeRequest('/contacts', 'POST', payload);
-  return ergebnis.id;
+  return { contactId: ergebnis.id, hatAdresse: hatAdresse };
 }
 
 /* ------------------------------------------------------------------ */
 /* Angebot (Quotation) in Lexoffice anlegen                            */
 /* ------------------------------------------------------------------ */
-async function legeAngebotAn({ contactId, objektAdresse, details, preise }) {
+async function legeAngebotAn({ contactId, kundenName, hatAdresse, objektAdresse, details, preise }) {
   const lineItems = [];
 
   const leistungenListe = [];
@@ -167,10 +182,17 @@ async function legeAngebotAn({ contactId, objektAdresse, details, preise }) {
   const ablaufdatum = new Date(heute);
   ablaufdatum.setDate(ablaufdatum.getDate() + 30);
 
+  // Lexoffice verlangt bei einer Kontakt-Referenz eine hinterlegte Rechnungsadresse.
+  // Ist keine Adresse vorhanden, weichen wir auf eine reine Namens-Adresse aus,
+  // damit das Angebot trotzdem erstellt wird (der Kontakt bleibt für später erhalten).
+  const angebotsAdresse = hatAdresse
+    ? { contactId: contactId }
+    : { name: kundenName };
+
   const payload = {
     voucherDate: heute.toISOString(),
     expirationDate: ablaufdatum.toISOString(),
-    address: { contactId: contactId },
+    address: angebotsAdresse,
     lineItems: lineItems,
     totalPrice: { currency: 'EUR' },
     taxConditions: { taxType: 'net' },
@@ -188,7 +210,7 @@ async function legeAngebotAn({ contactId, objektAdresse, details, preise }) {
 /* ------------------------------------------------------------------ */
 app.post('/api/erstelle-angebot', async (req, res) => {
   try {
-    const { name, email, objektAdresse, details, preise } = req.body || {};
+    const { name, email, objektAdresse, rechnungsadresse, details, preise } = req.body || {};
 
     if (!name || !email || !details || !preise) {
       return res.status(400).json({ fehler: 'Unvollständige Daten erhalten.' });
@@ -200,8 +222,8 @@ app.post('/api/erstelle-angebot', async (req, res) => {
       return res.status(500).json({ fehler: 'Server ist nicht korrekt konfiguriert (fehlender API-Key).' });
     }
 
-    const contactId = await legeKontaktAn({ name, email });
-    const angebot = await legeAngebotAn({ contactId, objektAdresse, details, preise });
+    const { contactId, hatAdresse } = await legeKontaktAn({ name, email, rechnungsadresse });
+    const angebot = await legeAngebotAn({ contactId, kundenName: name, hatAdresse, objektAdresse, details, preise });
 
     res.json({
       erfolg: true,
