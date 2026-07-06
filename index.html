@@ -169,6 +169,10 @@ input:checked+.slider:before{transform:translateX(22px)}
   <div class="modal-box">
     <h3>Admin-Bereich</h3>
     <div class="form-group">
+      <label>E-Mail:</label>
+      <input type="email" id="pw_email" onkeydown="if(event.key==='Enter')pruefePasswort()">
+    </div>
+    <div class="form-group">
       <label>Passwort:</label>
       <input type="password" id="pw_input" onkeydown="if(event.key==='Enter')pruefePasswort()">
       <div class="error-text" id="pw_error">Falsches Passwort.</div>
@@ -257,8 +261,8 @@ input:checked+.slider:before{transform:translateX(22px)}
    ============================================================ */
 const FIRMEN_EMAIL = "info@hausmeister-fruhnert.de";
 
-/* Admin-Passwort — bitte bei Bedarf im Code anpassen */
-const ADMIN_PASSWORT = "admin2026";
+/* Das Admin-Passwort liegt NICHT mehr hier im Code, sondern wird sicher
+   über den Render-Server geprüft (Umgebungsvariable ADMIN_PASSWORT). */
 
 const STORAGE_KEY = "kalkulator_preis_config_v1";
 
@@ -676,10 +680,11 @@ function erstelleLexofficeAngebot(name, email, strasse, plz, ort){
 /* ---------------- Admin-Bereich ---------------- */
 
 function oeffnePasswortAbfrage(){
+  document.getElementById('pw_email').value = "";
   document.getElementById('pw_input').value = "";
   document.getElementById('pw_error').style.display = 'none';
   document.getElementById('pw_modal').classList.add('open');
-  setTimeout(() => document.getElementById('pw_input').focus(), 50);
+  setTimeout(() => document.getElementById('pw_email').focus(), 50);
 }
 
 function schliesseModal(id){
@@ -687,14 +692,40 @@ function schliesseModal(id){
 }
 
 function pruefePasswort(){
+  const emailEingabe = document.getElementById('pw_email').value;
   const eingabe = document.getElementById('pw_input').value;
-  if(eingabe === ADMIN_PASSWORT){
-    schliesseModal('pw_modal');
-    befuelleAdminFormular();
-    document.getElementById('admin_modal').classList.add('open');
-  }else{
-    document.getElementById('pw_error').style.display = 'block';
+  const fehlerElement = document.getElementById('pw_error');
+  fehlerElement.style.display = 'none';
+
+  if(!LEXOFFICE_SERVER_URL || LEXOFFICE_SERVER_URL.indexOf("BITTE-") === 0){
+    fehlerElement.innerText = "Server-Adresse nicht konfiguriert.";
+    fehlerElement.style.display = 'block';
+    return;
   }
+
+  fetch(LEXOFFICE_SERVER_URL + "/api/admin-login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: emailEingabe, passwort: eingabe })
+  })
+  .then(function(antwort){ return antwort.json().then(function(daten){ return { status: antwort.status, daten: daten }; }); })
+  .then(function(ergebnis){
+    if(ergebnis.daten && ergebnis.daten.ok){
+      schliesseModal('pw_modal');
+      befuelleAdminFormular();
+      document.getElementById('admin_modal').classList.add('open');
+    }else if(ergebnis.status === 429){
+      fehlerElement.innerText = "Zu viele Versuche. Bitte kurz warten.";
+      fehlerElement.style.display = 'block';
+    }else{
+      fehlerElement.innerText = "E-Mail oder Passwort falsch.";
+      fehlerElement.style.display = 'block';
+    }
+  })
+  .catch(function(){
+    fehlerElement.innerText = "Server nicht erreichbar. Bitte später erneut versuchen.";
+    fehlerElement.style.display = 'block';
+  });
 }
 
 function befuelleAdminFormular(){
