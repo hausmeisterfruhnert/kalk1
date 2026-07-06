@@ -50,6 +50,32 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+/* Strengerer Schutz speziell für den Admin-Login gegen Passwort-Raten (Brute-Force) */
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 8,
+  message: { ok: false, fehler: 'Zu viele Login-Versuche. Bitte später erneut versuchen.' }
+});
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_PASSWORT = process.env.ADMIN_PASSWORT;
+if (!ADMIN_EMAIL || !ADMIN_PASSWORT) {
+  console.warn('⚠️  WARNUNG: ADMIN_EMAIL und/oder ADMIN_PASSWORT ist nicht gesetzt. Der Admin-Bereich kann nicht entsperrt werden.');
+}
+
+app.post('/api/admin-login', loginLimiter, (req, res) => {
+  const { email, passwort } = req.body || {};
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORT) {
+    return res.status(500).json({ ok: false, fehler: 'Server nicht korrekt konfiguriert.' });
+  }
+  const emailPasst = typeof email === 'string' && email.trim().toLowerCase() === ADMIN_EMAIL.trim().toLowerCase();
+  const passwortPasst = typeof passwort === 'string' && passwort === ADMIN_PASSWORT;
+  if (emailPasst && passwortPasst) {
+    return res.json({ ok: true });
+  }
+  return res.status(401).json({ ok: false });
+});
+
 const LEXOFFICE_API_KEY = process.env.LEXOFFICE_API_KEY;
 const LEXOFFICE_BASE_URL = 'https://api.lexware.io/v1';
 
