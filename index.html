@@ -79,14 +79,18 @@ input:checked+.slider:before{transform:translateX(22px)}
 
 /* Footer */
 .site-footer{margin-top:0;background:var(--navy);color:#dbe6ee;padding:32px 0;width:100%;box-sizing:border-box}
-.footer-inner{display:flex;flex-wrap:wrap;gap:28px 48px;justify-content:space-between;align-items:flex-start;max-width:1120px;margin:0 auto;padding:0 24px;box-sizing:border-box}
+.footer-inner{max-width:1120px;margin:0 auto;padding:0 24px;box-sizing:border-box}
+.footer-top{display:flex;justify-content:center;margin-bottom:28px}
+.footer-logo-link{display:inline-block}
+.footer-logo-img{height:44px;width:auto;display:block;background:#fff;border-radius:8px;padding:8px 14px}
+.footer-columns{display:flex;flex-wrap:wrap;gap:28px 48px;justify-content:space-between;align-items:flex-start}
 .footer-brand{font-weight:700;font-size:18px;color:#fff;margin-bottom:6px}
-.footer-col p,.footer-col a{font-size:14px;color:#c0d0dc;margin:2px 0;display:block}
-.footer-col a:hover{color:#fff}
-.footer-title{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8fb0c4;margin-bottom:10px}
-.footer-bottom{border-top:1px solid rgba(255,255,255,.12);margin-top:32px;padding-top:20px;font-size:13px;color:#8fb0c4;display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between;max-width:1120px;margin-left:auto;margin-right:auto;padding-left:24px;padding-right:24px;box-sizing:border-box}
-.footer-bottom a{color:#8fb0c4}
-.footer-bottom a:hover{color:#fff}
+.footer-col p,.footer-col a{font-size:14px;color:#ffffff;margin:2px 0;display:block}
+.footer-col a:hover{color:#dbe6ee}
+.footer-title{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#ffffff;margin-bottom:10px}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.12);margin-top:32px;padding-top:20px;font-size:13px;color:#ffffff;display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between;max-width:1120px;margin-left:auto;margin-right:auto;padding-left:24px;padding-right:24px;box-sizing:border-box}
+.footer-bottom a{color:#ffffff}
+.footer-bottom a:hover{color:#dbe6ee}
 @media (max-width:720px){.header-inner{height:70px}.site-logo img{height:38px}.back-link{padding:8px 10px;font-size:13px}}
 </style>
 </head>
@@ -219,26 +223,39 @@ input:checked+.slider:before{transform:translateX(22px)}
 </div>
 
 <footer class="site-footer">
-  <div class="footer-inner">
+  <div class="footer-inner footer-columns">
     <div class="footer-col">
-      <div class="footer-brand">Fruhnert Hausmeisterservice</div>
-      <p>Zuverlässige Betreuung Ihrer Immobilie.</p>
+      <div class="footer-title">Leistungen</div>
+      <a href="https://www.hausmeister-fruhnert.de/">Hausmeisterservice</a>
+      <a href="https://www.hausmeister-fruhnert.de/dachrinnenreinigung/">Dachrinnenreinigung</a>
+      <a href="https://www.hausmeister-fruhnert.de/tiefgaragenreinigung/">Tiefgaragenreinigung</a>
+      <a href="https://www.hausmeister-fruhnert.de/spuelwagenvermietung/">Spülwagenvermietung</a>
+      <a href="https://www.hausmeister-fruhnert.de/winterdienst/">Winterdienst</a>
     </div>
     <div class="footer-col">
-      <div class="footer-title">Kontakt</div>
-      <a href="tel:+4981415098956">Telefon: 08141 50 98 95 6</a>
-      <a href="mailto:info@hausmeister-fruhnert.de">info@hausmeister-fruhnert.de</a>
+      <div class="footer-title">Navigation</div>
+      <a href="https://www.hausmeister-fruhnert.de/ueber-uns/">Über uns</a>
+      <a href="https://www.hausmeister-fruhnert.de/einsatzorte/">Einsatzorte</a>
+      <a href="https://www.hausmeister-fruhnert.de/kontakt/">Kontakt</a>
+      <a href="https://www.hausmeister-fruhnert.de/angebot-anfordern/">Angebot anfragen</a>
     </div>
     <div class="footer-col">
-      <div class="footer-title">Mehr</div>
-      <a href="https://www.hausmeister-fruhnert.de">Zur Hauptseite</a>
-      <a href="https://www.hausmeister-fruhnert.de/impressum" target="_blank" rel="noopener">Impressum</a>
-      <a href="https://www.hausmeister-fruhnert.de/datenschutz" target="_blank" rel="noopener">Datenschutz</a>
+      <div class="footer-title">Rechtliches</div>
+      <a href="https://www.hausmeister-fruhnert.de/impressum/" target="_blank" rel="noopener">Impressum</a>
+      <a href="https://www.hausmeister-fruhnert.de/datenschutzerklaerung/" target="_blank" rel="noopener">Datenschutz</a>
+    </div>
+    <div class="footer-col">
+      <div class="footer-title">Abonniere uns</div>
+      <a href="https://www.instagram.com/hausmeister_fruhnert?igsh=ZDAwZTZzYjJnenFu&utm_source=qr" target="_blank" rel="noopener">Instagram</a>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2026 Fruhnert Hausmeisterservice</span>
-    <span>Digitale Tools &amp; Services</span>
+    <span>Copyright 2026 Fruhnert Hausmeisterservice</span>
+    <span>
+      <a href="tel:+4981415098956">08141 50 98 95 6</a> ·
+      <a href="mailto:info@hausmeister-fruhnert.de">info@hausmeister-fruhnert.de</a> ·
+      Münchener Str. 4, 85247 Schwabhausen
+    </span>
   </div>
 </footer>
 
