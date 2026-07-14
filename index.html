@@ -128,13 +128,13 @@ input:checked+.slider:before{transform:translateX(22px)}
     <input type="number" id="garten_qm" min="0" placeholder="Bis 300 qm inklusive" oninput="berechnePreis()"></div>
 
   <div class="switch-group"><label>Treppenhausreinigung (wöchentlich)</label>
-    <label class="switch"><input type="checkbox" id="reinigung" checked onchange="berechnePreis()"><span class="slider"></span></label></div>
+    <label class="switch"><input type="checkbox" id="reinigung" onchange="berechnePreis()"><span class="slider"></span></label></div>
   <div class="switch-group"><label>Fahrstuhl vorhanden (+15&nbsp;€&nbsp;/&nbsp;Mon.)</label>
     <label class="switch"><input type="checkbox" id="fahrstuhl" onchange="berechnePreis()"><span class="slider"></span></label></div>
   <div class="switch-group"><label>Gartenpflege &amp; Rasenmähen</label>
-    <label class="switch"><input type="checkbox" id="garten" checked onchange="berechnePreis()"><span class="slider"></span></label></div>
+    <label class="switch"><input type="checkbox" id="garten" onchange="berechnePreis()"><span class="slider"></span></label></div>
   <div class="switch-group"><label>Winterdienst-Pauschale</label>
-    <label class="switch"><input type="checkbox" id="winter" checked onchange="berechnePreis()"><span class="slider"></span></label></div>
+    <label class="switch"><input type="checkbox" id="winter" onchange="berechnePreis()"><span class="slider"></span></label></div>
   <div id="winter_feld" class="sub-field">
     <div class="form-row">
       <div class="form-group"><label>Gehweg-Fläche (qm):</label><input type="number" id="winter_flaeche" min="0" placeholder="leer = Standardpauschale" oninput="berechnePreis()"></div>
@@ -149,7 +149,7 @@ input:checked+.slider:before{transform:translateX(22px)}
     <div class="warn-hint" style="display:block">ℹ️ Hinweis: Streusalz ist in vielen Gemeinden aus Umweltschutzgründen eingeschränkt oder verboten – bitte örtliche Satzung prüfen. Splitt ist meist die zulässige Standardlösung.</div>
   </div>
   <div class="switch-group"><label>Mülltonnendienst per App</label>
-    <label class="switch"><input type="checkbox" id="tonnen" checked onchange="berechnePreis()"><span class="slider"></span></label></div>
+    <label class="switch"><input type="checkbox" id="tonnen" onchange="berechnePreis()"><span class="slider"></span></label></div>
   <div class="switch-group"><label>Tiefgaragenreinigung (Nassreinigung)</label>
     <label class="switch"><input type="checkbox" id="tg_aktiv" onchange="berechnePreis()"><span class="slider"></span></label></div>
 
