@@ -240,36 +240,66 @@ async function lexofficeAufruf(pfad, methode, body) {
 async function findeKontakt(email) {
   try {
     const r = await lexofficeRequest('/contacts?customer=true&email=' + encodeURIComponent(email), 'GET');
-    const k = r && Array.isArray(r.content) ? r.content[0] : null;
-    if (!k) return null;
-    const billing = k.addresses && k.addresses.billing && k.addresses.billing[0];
-    return { contactId: k.id, hatAdresse: !!(billing && billing.zip && billing.city) };
+    return r && Array.isArray(r.content) && r.content[0] ? r.content[0] : null;
   } catch (e) {
     console.warn('Kontaktsuche fehlgeschlagen, lege neuen Kontakt an:', e.status || e.message);
     return null;
   }
 }
 
+/* Vorhandenen Kunden ergänzen: fehlende Adresse und Telefonnummer eintragen, Notiz anhängen */
+async function ergaenzeKontakt(kontakt, { telefon, adr, notiz }) {
+  const k = await lexofficeRequest('/contacts/' + kontakt.id, 'GET'); // aktuelle Version holen
+  let geaendert = false;
+  k.addresses = k.addresses || {};
+  const billing = (k.addresses.billing || [])[0];
+  if (adr && !(billing && billing.street && billing.zip && billing.city)) {
+    k.addresses.billing = [adr]; geaendert = true;
+  }
+  if (adr && !(k.addresses.shipping || []).some(s => s.street === adr.street && s.zip === adr.zip)) {
+    k.addresses.shipping = [...(k.addresses.shipping || []), Object.assign({ supplement: 'Objektadresse' }, adr)]; geaendert = true;
+  }
+  if (telefon) {
+    k.phoneNumbers = k.phoneNumbers || {};
+    const alle = Object.values(k.phoneNumbers).flat();
+    if (!alle.includes(telefon)) { k.phoneNumbers.business = [...(k.phoneNumbers.business || []), telefon]; geaendert = true; }
+  }
+  if (notiz) {
+    k.note = kurz2(((k.note ? k.note + '\n\n' : '') + notiz), 1000); geaendert = true;
+  }
+  if (geaendert) {
+    if (!k.addresses.billing && !k.addresses.shipping) delete k.addresses;
+    await lexofficeRequest('/contacts/' + kontakt.id, 'PUT', k);
+  }
+  const b = (k.addresses && k.addresses.billing || [])[0];
+  return !!(b && b.zip && b.city);
+}
+
 async function legeKontaktAn({ name, email, telefon, rechnungsadresse, objektAdresse, notiz }) {
+  const a = rechnungsadresse || {};
+  const adr = (a.strasse && a.plz && a.ort)
+    ? { street: kurz(a.strasse, 100), zip: kurz(a.plz, 10), city: kurz(a.ort, 80), countryCode: 'DE' } : null;
+  const tel = telefon ? kurz(telefon, 30) : '';
+
   const vorhanden = await findeKontakt(email);
-  if (vorhanden) return Object.assign(vorhanden, { neu: false });
+  if (vorhanden) {
+    let hatAdresse = false;
+    try { hatAdresse = await ergaenzeKontakt(vorhanden, { telefon: tel, adr, notiz }); }
+    catch (e) { console.warn('Kunde konnte nicht ergänzt werden:', e.status || e.message, e.details ? JSON.stringify(e.details) : ''); }
+    return { contactId: vorhanden.id, hatAdresse, neu: false };
+  }
 
   const payload = {
     version: 0,
     roles: { customer: {} },
     company: { name: kurz(name, 100) },
-    emailAddresses: { business: [email] },
-    note: notiz ? kurz2(notiz, 1000) : undefined
+    emailAddresses: { business: [email] }
   };
-  if (telefon) payload.phoneNumbers = { business: [kurz(telefon, 30)] };
-  const a = rechnungsadresse || {};
-  const hatAdresse = !!(a.strasse && a.plz && a.ort);
-  if (hatAdresse) {
-    const adr = { street: kurz(a.strasse, 100), zip: kurz(a.plz, 10), city: kurz(a.ort, 80), countryCode: 'DE' };
-    payload.addresses = { billing: [adr], shipping: [Object.assign({ supplement: 'Objektadresse' }, adr)] };
-  }
+  if (notiz) payload.note = kurz2(notiz, 1000);
+  if (tel) payload.phoneNumbers = { business: [tel] };
+  if (adr) payload.addresses = { billing: [adr], shipping: [Object.assign({ supplement: 'Objektadresse' }, adr)] };
   const ergebnis = await lexofficeRequest('/contacts', 'POST', payload);
-  return { contactId: ergebnis.id, hatAdresse, neu: true };
+  return { contactId: ergebnis.id, hatAdresse: !!adr, neu: true };
 }
 
 /* Texte zu den Leistungen – werden für Lexoffice und die E-Mails genutzt */
