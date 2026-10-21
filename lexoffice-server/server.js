@@ -175,7 +175,7 @@ const material = (m) => (m === 'salz' ? 'Streusalz' : 'Splitt');
 
 function pruefeAnfrage(body) {
   const { name, email, details, preise } = body || {};
-  if (!name || !email || !details || !preise) return 'Unvollständige Daten erhalten.';
+  if (!name || !email) return 'Unvollständige Daten erhalten.';
   if (!istEmail(email)) return 'Ungültige E-Mail-Adresse.';
   return null;
 }
@@ -288,12 +288,20 @@ function telefonFeld(tel) {
    - Privatperson: Anrede, Vorname, Nachname
    - Firma / Hausverwaltung: Firmenname + Ansprechpartner (Anrede, Vorname, Nachname, E-Mail, Telefon)
    Adresse = Rechnungsadresse (Straße 1 / PLZ 1 / Ort 1), Telefon = Telefon 1 */
-async function legeKontaktAn({ name, email, telefon, rechnungsadresse, kunde, notiz }) {
+async function legeKontaktAn({ name, email, telefon, rechnungsadresse, kunde, altFirma, notiz }) {
   const a = rechnungsadresse || {};
   const adr = (a.strasse && a.plz && a.ort)
     ? { street: kurz(a.strasse, 100), zip: kurz(a.plz, 10), city: kurz(a.ort, 80), countryCode: 'DE' } : null;
   const tel = telefon ? kurz(telefon, 30) : '';
-  const kd = kunde || {};
+  // Ältere Formulare (Angebotsformular der Website, alter Kalkulator) schicken kein "kunde"-Objekt.
+  // Dann: mit Firma -> Firma + Ansprechpartner aus "name"; ohne Firma -> Privatperson aus "name".
+  let kd = kunde || null;
+  if (!kd) {
+    const teile = kurz(name, 100).split(/\s+/).filter(Boolean);
+    const nn = teile.length > 1 ? teile.pop() : (teile[0] || '');
+    const vn = teile.length ? teile.join(' ') : '';
+    kd = altFirma ? { typ: 'firma', firma: altFirma, vorname: vn, nachname: nn } : { typ: 'privat', vorname: vn, nachname: nn };
+  }
   const anrede = ['Herr', 'Frau'].includes(kd.anrede) ? kd.anrede : undefined;
   const vorname = kurz(kd.vorname, 50), nachname = kurz(kd.nachname, 50), firma = kurz(kd.firma, 100);
   const istPrivat = kd.typ === 'privat' && nachname;
@@ -419,7 +427,7 @@ async function artikelFuer(key, einheit) {
   }
 }
 
-async function legeAngebotAn({ contactId, kundenName, hatAdresse, objektAdresse, details, preise }) {
+async function legeAngebotAn({ contactId, kundenName, hatAdresse, objektAdresse, details, preise, nachricht }) {
   const d = details;
   const pos = preise.positionen || {};
   const texte = leistungsTexte(d);
@@ -453,6 +461,10 @@ async function legeAngebotAn({ contactId, kundenName, hatAdresse, objektAdresse,
     zeile(key, texte[key].name, pos[key], texte[key].beschreibung, 'Monat');
   }
 
+  if (d.winterSoloAktiv && !d.winter && zahl(preise.winterSoloNetto) > 0) { // altes Format
+    zeile('winter', 'Eigenständiger Winterdienst (' + zahl(d.winterSoloFlaeche) + ' m², ' + material(d.winterSoloMaterial) + ')',
+      preise.winterSoloNetto, 'Unabhängig buchbarer Winterdienst ohne weitere Hausmeister-Leistungen', 'Monat');
+  }
   if (d.tgAktiv) {
     zeile('tiefgarage', 'Einmalige Tiefgaragenreinigung (Nassreinigung)', preise.tgNetto,
       zahl(d.tgPlaetze) + ' Stellplätze (ca. ' + zahl(d.tgStellflaeche) + ' m²) + Fahrgasse ca. ' + zahl(d.tgFahrgasse)
@@ -495,7 +507,8 @@ async function legeAngebotAn({ contactId, kundenName, hatAdresse, objektAdresse,
     totalPrice: { currency: 'EUR' },
     taxConditions: { taxType: 'net' },
     introduction: 'Vielen Dank für Ihre Anfrage über unseren Online-Kalkulator.'
-      + (objektAdresse ? ('\nObjektadresse: ' + kurz(objektAdresse, 200)) : ''),
+      + (objektAdresse ? ('\nObjektadresse: ' + kurz(objektAdresse, 200)) : '')
+      + (nachricht ? ('\nIhre Nachricht: ' + nachricht) : ''),
     remark: 'Unverbindlicher Richtpreis auf Basis der Online-Kalkulation. Der finale Preis wird nach einer Objektbegehung bestätigt.\n'
       + 'Sämtliche Arbeitskosten werden auf der Rechnung als Lohnkosten im Sinne von § 35a EStG ausgewiesen.'
   };
@@ -508,12 +521,19 @@ app.post('/api/erstelle-angebot', anfrageLimiter, async (req, res) => {
     if (fehler) return res.status(400).json({ fehler });
     if (!LEXOFFICE_API_KEY) return res.status(500).json({ fehler: 'Server ist nicht korrekt konfiguriert (fehlender API-Key).' });
 
-    const { name, email, telefon, objektAdresse, rechnungsadresse, kunde, details, preise } = req.body;
+    const b = req.body;
+    b.details = b.details || {}; b.preise = b.preise || {};
+    const { name, email, objektAdresse, kunde, details, preise } = b;
+    const telefon = b.telefon || b.phone || b.tel || '';
+    const altFirma = kurz(b.firma || b.company || '', 100);
+    const nachricht = kurz2(b.nachricht || b.bemerkung || b.message || '', 800);
+    const rechnungsadresse = b.rechnungsadresse || { strasse: b.strasse, plz: b.plz, ort: b.ort };
     const notiz = 'Anfrage über Online-Kalkulator vom ' + new Date().toLocaleDateString('de-DE') + '\n'
       + baueMails(req.body).objektKurz;
-    console.log('Anfrage erhalten – Kundentyp:', (kunde && kunde.typ) || 'FEHLT (alter Kalkulator?)', '| Telefon:', telefon ? 'ja' : 'nein', '| Adresse:', rechnungsadresse && rechnungsadresse.ort ? 'ja' : 'nein');
-    const { contactId, hatAdresse, neu } = await legeKontaktAn({ name, email, telefon, rechnungsadresse, kunde, notiz });
-    const angebot = await legeAngebotAn({ contactId, kundenName: name, hatAdresse, objektAdresse, details, preise });
+    if (!kunde) console.log('Anfrage ohne Kalkulator-Kundendaten – übertragene Felder:', Object.keys(b).join(', '), '| rechnungsadresse:', b.rechnungsadresse ? Object.keys(b.rechnungsadresse).join(', ') : '-');
+    console.log('Anfrage erhalten – Kundentyp:', (kunde && kunde.typ) || 'nicht übergeben (Angebotsformular / alter Kalkulator)', '| Telefon:', telefon ? 'ja' : 'nein', '| Adresse:', rechnungsadresse && rechnungsadresse.ort ? 'ja' : 'nein');
+    const { contactId, hatAdresse, neu } = await legeKontaktAn({ name, email, telefon, rechnungsadresse, kunde, altFirma, notiz: notiz + (nachricht ? ('\nNachricht: ' + nachricht) : '') });
+    const angebot = await legeAngebotAn({ contactId, kundenName: name, hatAdresse, objektAdresse, details, preise, nachricht });
     res.json({ erfolg: true, angebotId: angebot.id, kontaktNeu: neu, hinweis: 'Angebot wurde in Lexoffice als Entwurf angelegt.' });
   } catch (err) {
     console.error('Fehler beim Erstellen des Angebots:', err.status, err.details || err.message);
