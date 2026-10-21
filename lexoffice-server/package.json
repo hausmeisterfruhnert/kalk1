@@ -1,6 +1,6 @@
 {
   "name": "kalkulator-lexoffice-server",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Kleiner Server, der bei einer Angebotsanfrage aus dem Objekt-Kalkulator automatisch ein Angebot in Lexoffice (Lexware Office) anlegt.",
   "main": "server.js",
   "type": "commonjs",
@@ -14,6 +14,7 @@
     "express": "^4.19.2",
     "cors": "^2.8.5",
     "express-rate-limit": "^7.4.0",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "nodemailer": "^6.9.14"
   }
 }
