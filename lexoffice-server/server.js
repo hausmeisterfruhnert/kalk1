@@ -237,10 +237,16 @@ async function lexofficeAufruf(pfad, methode, body) {
 
 /* Kunde in Lexoffice: vorhandenen Kontakt (gleiche E-Mail) wiederverwenden, sonst neu anlegen
    – mit Name, E-Mail, Telefon, Rechnungs- und Objektadresse und einer Notiz zum Objekt */
-async function findeKontakt(email) {
+/* Vorhandenen Kunden nur wiederverwenden, wenn E-Mail UND Name zusammenpassen
+   (Privatperson: gleicher Nachname, Firma: gleicher Firmenname). Sonst neu anlegen. */
+async function findeKontakt(email, kd) {
   try {
     const r = await lexofficeRequest('/contacts?customer=true&email=' + encodeURIComponent(email), 'GET');
-    return r && Array.isArray(r.content) && r.content[0] ? r.content[0] : null;
+    const liste = r && Array.isArray(r.content) ? r.content : [];
+    const gleich = (x, y) => String(x || '').trim().toLowerCase() === String(y || '').trim().toLowerCase();
+    return liste.find(c => (kd.typ === 'privat')
+      ? (c.person && gleich(c.person.lastName, kd.nachname))
+      : (c.company && gleich(c.company.name, kd.firma))) || null;
   } catch (e) {
     console.warn('Kontaktsuche fehlgeschlagen, lege neuen Kontakt an:', e.status || e.message);
     return null;
@@ -292,11 +298,12 @@ async function legeKontaktAn({ name, email, telefon, rechnungsadresse, kunde, no
   const vorname = kurz(kd.vorname, 50), nachname = kurz(kd.nachname, 50), firma = kurz(kd.firma, 100);
   const istPrivat = kd.typ === 'privat' && nachname;
 
-  const vorhanden = await findeKontakt(email);
+  const vorhanden = await findeKontakt(email, { typ: istPrivat ? 'privat' : 'firma', nachname, firma: firma || kurz(name, 100) });
   if (vorhanden) {
     let hatAdresse = false;
     try { hatAdresse = await ergaenzeKontakt(vorhanden, { telefon: tel, adr, notiz }); }
     catch (e) { console.warn('Kunde konnte nicht ergänzt werden:', e.status || e.message, e.details ? JSON.stringify(e.details) : ''); }
+    console.log('Vorhandenen Kunden verwendet und ergänzt:', vorhanden.id);
     return { contactId: vorhanden.id, hatAdresse, neu: false };
   }
 
@@ -316,6 +323,7 @@ async function legeKontaktAn({ name, email, telefon, rechnungsadresse, kunde, no
   if (adr) payload.addresses = { billing: [adr] };
   if (notiz) payload.note = kurz2(notiz, 1000);
   const ergebnis = await lexofficeRequest('/contacts', 'POST', payload);
+  console.log('Neuer Kunde angelegt:', ergebnis.id, istPrivat ? '(Privatperson)' : '(Firma)', tel ? 'mit Telefon' : 'ohne Telefon', adr ? 'mit Adresse' : 'OHNE Adresse');
   return { contactId: ergebnis.id, hatAdresse: !!adr, neu: true };
 }
 
@@ -503,6 +511,7 @@ app.post('/api/erstelle-angebot', anfrageLimiter, async (req, res) => {
     const { name, email, telefon, objektAdresse, rechnungsadresse, kunde, details, preise } = req.body;
     const notiz = 'Anfrage über Online-Kalkulator vom ' + new Date().toLocaleDateString('de-DE') + '\n'
       + baueMails(req.body).objektKurz;
+    console.log('Anfrage erhalten – Kundentyp:', (kunde && kunde.typ) || 'FEHLT (alter Kalkulator?)', '| Telefon:', telefon ? 'ja' : 'nein', '| Adresse:', rechnungsadresse && rechnungsadresse.ort ? 'ja' : 'nein');
     const { contactId, hatAdresse, neu } = await legeKontaktAn({ name, email, telefon, rechnungsadresse, kunde, notiz });
     const angebot = await legeAngebotAn({ contactId, kundenName: name, hatAdresse, objektAdresse, details, preise });
     res.json({ erfolg: true, angebotId: angebot.id, kontaktNeu: neu, hinweis: 'Angebot wurde in Lexoffice als Entwurf angelegt.' });
