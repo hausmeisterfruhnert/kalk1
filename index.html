@@ -149,6 +149,15 @@ main.gut{padding-block:10px 24px}
 #hfr #hfr-form .fields{grid-template-columns:repeat(2,minmax(0,1fr))}
 #hfr #hfr-form .btn{padding:8px 16px}
 #hfr .plzort{display:grid;grid-template-columns:76px minmax(0,1fr);gap:8px}
+#hfr .anrname{display:grid;grid-template-columns:78px minmax(0,1fr);gap:8px}
+#hfr .typwahl{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--hfr-line);border-radius:8px;overflow:hidden}
+#hfr .typ{display:block;cursor:pointer;margin:0;gap:0}
+#hfr .typ input{position:absolute;opacity:0;pointer-events:none}
+#hfr .typ span{display:block;text-align:center;padding:8px 6px;font-size:13.5px;font-weight:600;color:var(--hfr-brand);background:#fff}
+#hfr .typ + .typ span{border-left:1px solid var(--hfr-line)}
+#hfr .typ input:checked + span{background:var(--hfr-accent);color:#fff}
+#hfr .typ input:focus-visible + span{outline:2px solid var(--hfr-accent);outline-offset:-3px}
+#hfr .span2{grid-column:1 / -1}
 </style>
 </head>
 <body>
@@ -239,8 +248,14 @@ main.gut{padding-block:10px 24px}
 
   <form class="card" id="hfr-form" novalidate>
     <h3>Unverbindliches Angebot anfordern</h3>
+    <div class="typwahl" role="radiogroup" aria-label="Ich bin">
+      <label class="typ" for="hfr-typ-firma"><input type="radio" name="hfr-typ" id="hfr-typ-firma" value="firma" checked><span>Firma / Hausverwaltung</span></label>
+      <label class="typ" for="hfr-typ-privat"><input type="radio" name="hfr-typ" id="hfr-typ-privat" value="privat"><span>Privatperson / Eigentümer</span></label>
+    </div>
     <div class="fields two">
-      <label for="hfr-name">Name / Hausverwaltung<input id="hfr-name" type="text" autocomplete="name" required></label>
+      <label for="hfr-firma" id="hfr-firma-l" class="span2">Firmenname / Hausverwaltung<input id="hfr-firma" type="text" autocomplete="organization"></label>
+      <div class="anrname"><label for="hfr-anrede">Anrede<select id="hfr-anrede"><option value="">–</option><option>Frau</option><option>Herr</option></select></label><label for="hfr-vorname"><span id="hfr-vorname-t">Vorname</span><input id="hfr-vorname" type="text" autocomplete="given-name"></label></div>
+      <label for="hfr-nachname"><span id="hfr-nachname-t">Nachname Ansprechpartner</span><input id="hfr-nachname" type="text" autocomplete="family-name"></label>
       <label for="hfr-mail">E-Mail<input id="hfr-mail" type="email" autocomplete="email" required></label>
       <label for="hfr-tel">Telefon (optional)<input id="hfr-tel" type="tel" autocomplete="tel"></label>
       <label for="hfr-str">Straße, Nr. (Objekt)<input id="hfr-str" type="text" autocomplete="street-address" required></label>
@@ -461,7 +476,7 @@ function calc(){
 }
 function details(k){
   const ja=b=>b?'JA':'NEIN';
-  return ['KONTAKT','• Name / Hausverwaltung: '+k.name,'• E-Mail: '+k.mail,'• Telefon: '+(k.tel||'-'),'• Objekt: '+([k.str,[k.plz,k.ort].filter(Boolean).join(' ')].filter(Boolean).join(', ')||'-'),'',
+  return ['KONTAKT','• '+(k.typ==='firma'?'Firma / Hausverwaltung: '+k.firma+(k.nachname?' · Ansprechpartner: '+[k.anrede,k.vorname,k.nachname].filter(Boolean).join(' '):''):'Name: '+[k.anrede,k.vorname,k.nachname].filter(Boolean).join(' ')),'• E-Mail: '+k.mail,'• Telefon: '+(k.tel||'-'),'• Objekt: '+([k.str,[k.plz,k.ort].filter(Boolean).join(' ')].filter(Boolean).join(', ')||'-'),'',
     'OBJEKT','• Wohneinheiten: '+I.we,'• Höchstes Stockwerk: '+I.etagen+'. OG','• Treppenhäuser: '+I.th,'• Aufzüge: '+I.aufzuege,
     '• Gartenfläche: '+I.gartenQm+' m² (Laub: '+I.laub+')','• Winterdienst-Fläche: '+I.wGeh+' m² Gehweg + '+I.wExtra+' m² Extrafläche, '+(I.mat==='salz'?'Streusalz':'Splitt'),'',
     'GEWÄHLTE LEISTUNGEN','• Treppenhausreinigung: '+(I.s.th?'JA ('+$('tth').selectedOptions[0].text+')':'NEIN'),'• Hausmeisterservice: '+(I.s.hm?'JA ('+$('thm').selectedOptions[0].text+')':'NEIN'),'• Mülltonnendienst: '+ja(I.s.ton),'• Fahrstuhl-Reinigung: '+ja(I.s.fs),
@@ -498,7 +513,7 @@ function payload(k){
   const [mv,mb]=R.aktiv?sp(R.netto):[0,0],[tv,tb]=R.tg?sp(R.tg):[0,0],[rv,rb]=R.rinne?sp(R.rinne):[0,0];
   const txt=id=>$(id).selectedOptions[0].text;
   return {
-    name:k.name,email:k.mail,telefon:k.tel,
+    name:k.name,email:k.mail,telefon:k.tel,kunde:{typ:k.typ,anrede:k.anrede,vorname:k.vorname,nachname:k.nachname,firma:k.firma},
     objektAdresse:[k.str,[k.plz,k.ort].filter(Boolean).join(' ')].filter(Boolean).join(', '),
     rechnungsadresse:{strasse:k.str,plz:k.plz,ort:k.ort},
     details:{einheiten:I.we,stockwerkText:I.etagen>2?('bis '+I.etagen+'. OG'):'Standard (bis 2. OG)',gartenText:I.gartenQm+' qm',
@@ -519,8 +534,11 @@ function lexoffice(k){
 }
 $('form').addEventListener('submit',ev=>{
   ev.preventDefault();
-  const k={name:$('name').value.trim(),mail:$('mail').value.trim(),str:$('str').value.trim(),plz:$('plz').value.trim(),ort:$('ort').value.trim(),tel:$('tel').value.trim()}, err=$('err');
-  if(!k.name||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(k.mail)){err.textContent='Bitte Namen und eine gültige E-Mail-Adresse eintragen.';err.hidden=false;return}
+  const typ=document.querySelector('input[name=hfr-typ]:checked').value, vn=$('vorname').value.trim(), nn=$('nachname').value.trim(), fi=$('firma').value.trim();
+  const k={typ,anrede:$('anrede').value,vorname:vn,nachname:nn,firma:typ==='firma'?fi:'',name:(typ==='firma'&&fi)?fi:[vn,nn].filter(Boolean).join(' '),mail:$('mail').value.trim(),str:$('str').value.trim(),plz:$('plz').value.trim(),ort:$('ort').value.trim(),tel:$('tel').value.trim()}, err=$('err');
+  if(typ==='firma'&&!fi){err.textContent='Bitte den Namen der Firma bzw. Hausverwaltung eintragen.';err.hidden=false;return}
+  if(typ==='privat'&&!nn){err.textContent='Bitte Ihren Nachnamen eintragen.';err.hidden=false;return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(k.mail)){err.textContent='Bitte eine gültige E-Mail-Adresse eintragen.';err.hidden=false;return}
   if(!k.str||!k.plz||!k.ort){err.textContent='Bitte die Objektadresse (Straße, PLZ, Ort) eintragen – wir benötigen sie für Ihr Angebot.';err.hidden=false;return}
   if(!R.aktiv&&!R.tg&&!R.rinne){err.textContent='Bitte mindestens eine Leistung auswählen.';err.hidden=false;return}
   err.hidden=true; lexoffice(k);
@@ -598,6 +616,8 @@ $('a-reset').addEventListener('click',()=>{FELDER.forEach(([,fs])=>fs.forEach(([
 $('a-korr').addEventListener('input',calc);
 $('a-korrfix').addEventListener('input',calc);
 
+function kundentyp(){const f=document.querySelector('input[name=hfr-typ]:checked').value==='firma';$('firma-l').hidden=!f;$('nachname-t').textContent=f?'Nachname Ansprechpartner':'Nachname';}
+document.querySelectorAll('input[name=hfr-typ]').forEach(r=>r.addEventListener('change',kundentyp));kundentyp();
 $('contact').textContent=[FIRMA.name,FIRMA.telefon,FIRMA.email,FIRMA.adresse].filter(Boolean).join(' · ');
 document.querySelectorAll('#hfr input,#hfr select').forEach(el=>{if(!el.closest('.modal'))el.addEventListener('input',calc)});
 calc();
