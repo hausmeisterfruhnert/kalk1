@@ -256,13 +256,10 @@ async function ergaenzeKontakt(kontakt, { telefon, adr, notiz }) {
   if (adr && !(billing && billing.street && billing.zip && billing.city)) {
     k.addresses.billing = [adr]; geaendert = true;
   }
-  if (adr && !(k.addresses.shipping || []).some(s => s.street === adr.street && s.zip === adr.zip)) {
-    k.addresses.shipping = [...(k.addresses.shipping || []), Object.assign({ supplement: 'Objektadresse' }, adr)]; geaendert = true;
-  }
   if (telefon) {
     k.phoneNumbers = k.phoneNumbers || {};
     const alle = Object.values(k.phoneNumbers).flat();
-    if (!alle.includes(telefon)) { k.phoneNumbers.business = [...(k.phoneNumbers.business || []), telefon]; geaendert = true; }
+    if (!alle.includes(telefon)) { const f = telefonFeld(telefon); k.phoneNumbers[f] = [...(k.phoneNumbers[f] || []), telefon]; geaendert = true; }
   }
   if (notiz) {
     k.note = kurz2(((k.note ? k.note + '\n\n' : '') + notiz), 1000); geaendert = true;
@@ -275,11 +272,25 @@ async function ergaenzeKontakt(kontakt, { telefon, adr, notiz }) {
   return !!(b && b.zip && b.city);
 }
 
-async function legeKontaktAn({ name, email, telefon, rechnungsadresse, objektAdresse, notiz }) {
+/* Telefonnummer: Handynummern (015x/016x/017x) als "Mobil", sonst "Geschäftlich" */
+function telefonFeld(tel) {
+  const n = tel.replace(/[^0-9+]/g, '');
+  return /^(\+49|0049|0)1[5-7]/.test(n) ? 'mobile' : 'business';
+}
+
+/* Kunde so anlegen, wie er in Lexoffice gepflegt wird:
+   - Privatperson: Anrede, Vorname, Nachname
+   - Firma / Hausverwaltung: Firmenname + Ansprechpartner (Anrede, Vorname, Nachname, E-Mail, Telefon)
+   Adresse = Rechnungsadresse (Straße 1 / PLZ 1 / Ort 1), Telefon = Telefon 1 */
+async function legeKontaktAn({ name, email, telefon, rechnungsadresse, kunde, notiz }) {
   const a = rechnungsadresse || {};
   const adr = (a.strasse && a.plz && a.ort)
     ? { street: kurz(a.strasse, 100), zip: kurz(a.plz, 10), city: kurz(a.ort, 80), countryCode: 'DE' } : null;
   const tel = telefon ? kurz(telefon, 30) : '';
+  const kd = kunde || {};
+  const anrede = ['Herr', 'Frau'].includes(kd.anrede) ? kd.anrede : undefined;
+  const vorname = kurz(kd.vorname, 50), nachname = kurz(kd.nachname, 50), firma = kurz(kd.firma, 100);
+  const istPrivat = kd.typ === 'privat' && nachname;
 
   const vorhanden = await findeKontakt(email);
   if (vorhanden) {
@@ -289,15 +300,21 @@ async function legeKontaktAn({ name, email, telefon, rechnungsadresse, objektAdr
     return { contactId: vorhanden.id, hatAdresse, neu: false };
   }
 
-  const payload = {
-    version: 0,
-    roles: { customer: {} },
-    company: { name: kurz(name, 100) },
-    emailAddresses: { business: [email] }
-  };
+  const payload = { version: 0, roles: { customer: {} }, emailAddresses: { business: [email] } };
+  if (istPrivat) {
+    payload.person = { salutation: anrede, firstName: vorname || undefined, lastName: nachname };
+  } else {
+    payload.company = { name: firma || kurz(name, 100) };
+    if (nachname) {
+      payload.company.contactPersons = [{
+        salutation: anrede, firstName: vorname || undefined, lastName: nachname, primary: true,
+        emailAddress: email, phoneNumber: tel || undefined
+      }];
+    }
+  }
+  if (tel) payload.phoneNumbers = { [telefonFeld(tel)]: [tel] };
+  if (adr) payload.addresses = { billing: [adr] };
   if (notiz) payload.note = kurz2(notiz, 1000);
-  if (tel) payload.phoneNumbers = { business: [tel] };
-  if (adr) payload.addresses = { billing: [adr], shipping: [Object.assign({ supplement: 'Objektadresse' }, adr)] };
   const ergebnis = await lexofficeRequest('/contacts', 'POST', payload);
   return { contactId: ergebnis.id, hatAdresse: !!adr, neu: true };
 }
@@ -483,10 +500,10 @@ app.post('/api/erstelle-angebot', anfrageLimiter, async (req, res) => {
     if (fehler) return res.status(400).json({ fehler });
     if (!LEXOFFICE_API_KEY) return res.status(500).json({ fehler: 'Server ist nicht korrekt konfiguriert (fehlender API-Key).' });
 
-    const { name, email, telefon, objektAdresse, rechnungsadresse, details, preise } = req.body;
+    const { name, email, telefon, objektAdresse, rechnungsadresse, kunde, details, preise } = req.body;
     const notiz = 'Anfrage über Online-Kalkulator vom ' + new Date().toLocaleDateString('de-DE') + '\n'
       + baueMails(req.body).objektKurz;
-    const { contactId, hatAdresse, neu } = await legeKontaktAn({ name, email, telefon, rechnungsadresse, objektAdresse, notiz });
+    const { contactId, hatAdresse, neu } = await legeKontaktAn({ name, email, telefon, rechnungsadresse, kunde, notiz });
     const angebot = await legeAngebotAn({ contactId, kundenName: name, hatAdresse, objektAdresse, details, preise });
     res.json({ erfolg: true, angebotId: angebot.id, kontaktNeu: neu, hinweis: 'Angebot wurde in Lexoffice als Entwurf angelegt.' });
   } catch (err) {
