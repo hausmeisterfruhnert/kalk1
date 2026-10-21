@@ -189,26 +189,50 @@ if (!LEXOFFICE_API_KEY) {
   console.warn('⚠️  LEXOFFICE_API_KEY ist nicht gesetzt. /api/erstelle-angebot wird fehlschlagen.');
 }
 
-async function lexofficeRequest(pfad, methode, body) {
-  const antwort = await fetch(LEXOFFICE_BASE_URL + pfad, {
-    method: methode,
-    headers: {
-      'Authorization': 'Bearer ' + LEXOFFICE_API_KEY,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    body: body ? JSON.stringify(body) : undefined
-  });
-  const text = await antwort.text();
-  let daten = null;
-  try { daten = text ? JSON.parse(text) : null; } catch (e) { daten = { rohtext: text }; }
-  if (!antwort.ok) {
-    const fehler = new Error('Lexoffice-API-Fehler: ' + antwort.status);
-    fehler.status = antwort.status;
-    fehler.details = daten;
-    throw fehler;
+/* Lexoffice erlaubt nur ca. 2 Anfragen pro Sekunde. Deshalb laufen alle Aufrufe
+   nacheinander mit mindestens 600 ms Abstand, und bei "Rate limit exceeded" (429)
+   wird automatisch mit Wartezeit wiederholt. */
+const LEX_ABSTAND_MS = 600;
+let lexWarteschlange = Promise.resolve();
+let lexLetzterAufruf = 0;
+const warte = (ms) => new Promise(r => setTimeout(r, ms));
+
+function lexofficeRequest(pfad, methode, body) {
+  const auftrag = lexWarteschlange.then(() => lexofficeAufruf(pfad, methode, body));
+  lexWarteschlange = auftrag.catch(() => {}); // Fehler blockieren die Warteschlange nicht
+  return auftrag;
+}
+
+async function lexofficeAufruf(pfad, methode, body) {
+  for (let versuch = 1; ; versuch++) {
+    const seitLetztem = Date.now() - lexLetzterAufruf;
+    if (seitLetztem < LEX_ABSTAND_MS) await warte(LEX_ABSTAND_MS - seitLetztem);
+    lexLetzterAufruf = Date.now();
+
+    const antwort = await fetch(LEXOFFICE_BASE_URL + pfad, {
+      method: methode,
+      headers: {
+        'Authorization': 'Bearer ' + LEXOFFICE_API_KEY,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (antwort.status === 429 && versuch < 6) {
+      await warte(1000 * versuch); // 1 s, 2 s, 3 s … warten und erneut versuchen
+      continue;
+    }
+    const text = await antwort.text();
+    let daten = null;
+    try { daten = text ? JSON.parse(text) : null; } catch (e) { daten = { rohtext: text }; }
+    if (!antwort.ok) {
+      const fehler = new Error('Lexoffice-API-Fehler: ' + antwort.status);
+      fehler.status = antwort.status;
+      fehler.details = daten;
+      throw fehler;
+    }
+    return daten;
   }
-  return daten;
 }
 
 /* Kunde in Lexoffice: vorhandenen Kontakt (gleiche E-Mail) wiederverwenden, sonst neu anlegen
@@ -302,25 +326,38 @@ const ARTIKEL = {
   dachrinne:   { nr: 'KALK-DACHRINNE',   titel: 'Dachrinnenreinigung (Dachrinnensauger mit Kamera)' }
 };
 const artikelCache = {};
+let artikelGeladen = false;
+
+/* Einmal alle Dienstleistungs-Artikel laden (1 Anfrage statt 9), danach aus dem Speicher */
+async function ladeArtikelListe() {
+  if (artikelGeladen) return;
+  for (let seite = 0; seite < 10; seite++) {
+    const r = await lexofficeRequest('/articles?type=SERVICE&size=250&page=' + seite, 'GET');
+    const liste = (r && Array.isArray(r.content)) ? r.content : [];
+    for (const art of liste) {
+      for (const [key, a] of Object.entries(ARTIKEL)) {
+        if (art.articleNumber === a.nr) artikelCache[key] = art.id;
+      }
+    }
+    if (!r || r.last !== false || liste.length === 0) break;
+  }
+  artikelGeladen = true;
+}
 
 async function artikelFuer(key, einheit) {
   const a = ARTIKEL[key];
   if (!a) return null;
   const envId = process.env['ARTIKEL_' + key.toUpperCase()];
   if (envId) return envId;
-  if (artikelCache[key]) return artikelCache[key];
   try {
-    const gefunden = await lexofficeRequest('/articles?articleNumber=' + encodeURIComponent(a.nr), 'GET');
-    let id = gefunden && Array.isArray(gefunden.content) && gefunden.content[0] ? gefunden.content[0].id : null;
-    if (!id) {
-      const neu = await lexofficeRequest('/articles', 'POST', {
-        title: a.titel, type: 'SERVICE', articleNumber: a.nr, unitName: einheit || 'Monat',
-        price: { netPrice: 0, leadingPrice: 'NET', taxRate: 19 }
-      });
-      id = neu && neu.id;
-    }
-    if (id) artikelCache[key] = id;
-    return id || null;
+    await ladeArtikelListe();
+    if (artikelCache[key]) return artikelCache[key];
+    const neu = await lexofficeRequest('/articles', 'POST', {
+      title: a.titel, type: 'SERVICE', articleNumber: a.nr, unitName: einheit || 'Monat',
+      price: { netPrice: 0, leadingPrice: 'NET', taxRate: 19 }
+    });
+    if (neu && neu.id) artikelCache[key] = neu.id;
+    return artikelCache[key] || null;
   } catch (e) {
     console.warn('Artikel ' + a.nr + ' nicht verfügbar, nutze Freitext-Position:', e.status || e.message, e.details ? JSON.stringify(e.details) : '');
     return null;
